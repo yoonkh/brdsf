@@ -1,6 +1,6 @@
 from flask_migrate import Migrate
 from app import create_app, db
-from app.models import Customercompany
+from app.models import CustomerAccount, CustomerCompany, ICraftAccount, Role
 
 app = create_app()
 migrate = Migrate(app, db)
@@ -8,7 +8,7 @@ migrate = Migrate(app, db)
 
 @app.shell_context_processor
 def make_shell_context():
-    return dict(db=db, Customercompany=Customercompany)
+    return dict(db=db, CustomerCompany=CustomerCompany, CustomerAccount=CustomerAccount, Role=Role)
 
 
 

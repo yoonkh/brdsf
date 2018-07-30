@@ -14,18 +14,17 @@ class Config:
     # FLASKY_MAIL_SENDER = 'Flasky Admin <flasky@example.com>'
     # FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        "sqlite:///" + basedir + "/app.db"
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')or \
+        "mysql+pymysql://{username}:{password}@{host}".\
+        format(username=os.environ.get("DB_USERNAME"), password=os.environ.get("DB_PASSWORD"),
+               host=os.environ.get("DB_HOST"))
 
 
 class DevelopmentConfig(Config):
     DEBUG = True
-
+    # SQLALCHEMY_DATABASE_URI = "sqlite:///" + basedir + "/app.db"
 
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        "mysql+pymysql://{username}:{password}@{host}".\
-        format(username=os.environ.get("DB_USERNAME"), password=os.environ.get("DB_PASSWORD"),
-               host=os.environ.get("DB_HOST"))
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
 
