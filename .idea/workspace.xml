@@ -1,20 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/app/models.py" line="185" />
-  </component>
   <component name="ChangeListManager">
     <list default="true" id="b590dfd2-c584-4b13-aae1-9b90ec6c498b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.db" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/flasky.py" beforeDir="false" afterPath="$PROJECT_DIR$/flasky.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/README" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/alembic.ini" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/env.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/script.py.mako" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/versions/28c135e2ed19_.py" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -53,7 +41,7 @@
         <counts>
           <entry key="Python Console" value="31" />
           <entry key="env" value="146" />
-          <entry key="py" value="3642" />
+          <entry key="py" value="5140" />
           <entry key="txt" value="2" />
         </counts>
       </usages-collector>
@@ -61,7 +49,7 @@
         <counts>
           <entry key=".env file" value="83" />
           <entry key="PLAIN_TEXT" value="65" />
-          <entry key="Python" value="3673" />
+          <entry key="Python" value="5171" />
         </counts>
       </usages-collector>
     </session>
@@ -71,10 +59,15 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="15">
-              <caret line="222" column="2" selection-start-line="222" selection-start-column="2" selection-end-line="222" selection-end-column="2" />
+            <state relative-caret-position="1092">
+              <caret line="405" column="70" selection-start-line="405" selection-start-column="70" selection-end-line="405" selection-end-column="70" />
               <folding>
                 <element signature="e#0#29#0" expanded="true" />
+                <marker date="1532921717906" expanded="true" signature="17978:17983" ph="..." />
+                <marker date="1532921717906" expanded="true" signature="18752:18757" ph="..." />
+                <marker date="1532921717906" expanded="true" signature="18752:19280" ph="..." />
+                <marker date="1532921717906" expanded="true" signature="19281:19282" ph="..." />
+                <marker date="1532921717906" expanded="true" signature="20044:20049" ph="..." />
               </folding>
             </state>
           </provider>
@@ -179,10 +172,9 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1920" />
-    <option name="y" value="-2" />
-    <option name="width" value="1080" />
-    <option name="height" value="1922" />
+    <option name="x" value="2102" />
+    <option name="width" value="1070" />
+    <option name="height" value="1053" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -241,7 +233,7 @@
     <frame x="1920" y="-2" width="1080" height="1922" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.17596972" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.17596972" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -251,8 +243,8 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="8" sideWeight="0.49952698" visible="true" weight="0.2282366" />
+      <window_info anchor="bottom" id="Version Control" order="7" weight="0.32979912" />
+      <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.49952698" visible="true" weight="0.2282366" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.500473" side_tool="true" weight="0.32979912" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32979912" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -323,10 +315,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="222" column="2" selection-start-line="222" selection-start-column="2" selection-end-line="222" selection-end-column="2" />
+        <state relative-caret-position="1092">
+          <caret line="405" column="70" selection-start-line="405" selection-start-column="70" selection-end-line="405" selection-end-column="70" />
           <folding>
             <element signature="e#0#29#0" expanded="true" />
+            <marker date="1532921717906" expanded="true" signature="17978:17983" ph="..." />
+            <marker date="1532921717906" expanded="true" signature="18752:18757" ph="..." />
+            <marker date="1532921717906" expanded="true" signature="18752:19280" ph="..." />
+            <marker date="1532921717906" expanded="true" signature="19281:19282" ph="..." />
+            <marker date="1532921717906" expanded="true" signature="20044:20049" ph="..." />
           </folding>
         </state>
       </provider>
