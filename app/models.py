@@ -1,367 +1,353 @@
 from datetime import datetime
-import hashlib
+from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from markdown import markdown
-import bleach
-from flask import current_app, request, url_for
-from flask_login import UserMixin, AnonymousUserMixin
-from app.exceptions import ValidationError
-from . import db, login_manager
+from flask import current_app
+from .exceptions import ValidationError
+from sqlalchemy.dialects.mysql import TINYINT, VARCHAR, ENUM, INTEGER, TEXT, DATETIME, CHAR, SMALLINT
+from . import db
 
-
-class Permission:
-    FOLLOW = 1
-    COMMENT = 2
-    WRITE = 4
-    MODERATE = 8
-    ADMIN = 16
+class CustomerCompany(db.Model):
+    __tablename__ = 'td_company'
+    idx = db.Column(INTEGER(11), primary_key=True)
+    code = db.Column(VARCHAR(10), unique=True)
+    name_kr = db.Column(VARCHAR(100))
+    name_en = db.Column(VARCHAR(100), default='NULL')
+    name_zh = db.Column(VARCHAR(100), default='NULL')
+    registrationNumber = db.Column(VARCHAR(45))
+    businessRegistrationUrl = db.Column(VARCHAR(64), default='NULL')
+    addr_kr = db.Column(TEXT)
+    addr_en = db.Column(TEXT, default='NULL')
+    addr_zh = db.Column(TEXT, default='NULL')
+    telephone = db.Column(VARCHAR(20), default='NULL')
+    fax=db.Column(VARCHAR(20), default='NULL')
+    delegator_kr = db.Column(VARCHAR(40))
+    delegator_en = db.Column(VARCHAR(45), default='NULL')
+    delegator_zh = db.Column(VARCHAR(45), default='NULL')
+    state = db.Column(ENUM('Registered','Deleted','Paused'))
+    registrant = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), index=True)
+    dtRegistered = db.Column(DATETIME)
+    modifier = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), index=True)
+    dtModified = db.Column(DATETIME)
+    note = db.Column(TEXT, default='NULL')
+    ci = db.Column(TEXT)
+    url = db.Column(TEXT)
+    description_kr = db.Column(TEXT, default='NULL')
+    description_en = db.Column(TEXT, default='NULL')
+    description_zh = db.Column(TEXT, default='NULL')
+    tntLogoImgUrl = db.Column(VARCHAR(64))
+    customer_companycode = db.relationship("CustomerAccount", backref='companyCode', lazy='dynamic')
 
 
 class Role(db.Model):
-    __tablename__ = 'roles'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), unique=True)
-    default = db.Column(db.Boolean, default=False, index=True)
-    permissions = db.Column(db.Integer)
-    users = db.relationship('User', backref='role', lazy='dynamic')
-
-    def __init__(self, **kwargs):
-        super(Role, self).__init__(**kwargs)
-        if self.permissions is None:
-            self.permissions = 0
-
-    @staticmethod
-    def insert_roles():
-        roles = {
-            'User': [Permission.FOLLOW, Permission.COMMENT, Permission.WRITE],
-            'Moderator': [Permission.FOLLOW, Permission.COMMENT,
-                          Permission.WRITE, Permission.MODERATE],
-            'Administrator': [Permission.FOLLOW, Permission.COMMENT,
-                              Permission.WRITE, Permission.MODERATE,
-                              Permission.ADMIN],
-        }
-        default_role = 'User'
-        for r in roles:
-            role = Role.query.filter_by(name=r).first()
-            if role is None:
-                role = Role(name=r)
-            role.reset_permissions()
-            for perm in roles[r]:
-                role.add_permission(perm)
-            role.default = (role.name == default_role)
-            db.session.add(role)
-        db.session.commit()
-
-    def add_permission(self, perm):
-        if not self.has_permission(perm):
-            self.permissions += perm
-
-    def remove_permission(self, perm):
-        if self.has_permission(perm):
-            self.permissions -= perm
-
-    def reset_permissions(self):
-        self.permissions = 0
-
-    def has_permission(self, perm):
-        return self.permissions & perm == perm
-
-    def __repr__(self):
-        return '<Role %r>' % self.name
+    __tablename__ = 'tc_role'
+    idx = db.Column(INTEGER(11), primary_key=True)
+    code = db.Column(TINYINT(4), unique=True, default='NULL')
+    name_kr = db.Column(VARCHAR(45), default='NULL')
+    name_en = db.Column(VARCHAR(45), default='NULL')
+    name_zh = db.Column(VARCHAR(45), default='NULL')
+    name_kr_forAccount = db.Column(VARCHAR(45), default='NULL')
+    name_en_forAccount = db.Column(VARCHAR(45), default='NULL')
+    name_zh_forAccount = db.Column(VARCHAR(45), default='NULL')
+    state = db.Column(ENUM('Registered','Deleted','Paused'), default='NULL')
+    description = db.Column(TEXT, default='NULL')
+    dtRegistered = db.Column(DATETIME, default='NULL')
+    dtModified = db.Column(DATETIME, default='NULL')
+    isIcraft = db.Column(TINYINT(1), default=0)
+    icraft_role = db.relationship("ICraftAccount", backref='role', lazy='dynamic')
+    customer_role = db.relationship("CustomerAccount", backref='role', lazy='dynamic')
 
 
-class Follow(db.Model):
-    __tablename__ = 'follows'
-    follower_id = db.Column(db.Integer, db.ForeignKey('users.id'),
-                            primary_key=True)
-    followed_id = db.Column(db.Integer, db.ForeignKey('users.id'),
-                            primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+class ICraftAccount(db.Model):
+    __tablename__ = 'td_admin'
+    idx = db.Column(INTEGER(11), primary_key=True)
+    id = db.Column(VARCHAR(20), unique=True)
+    pwd = db.Column(VARCHAR(45))
+    email = db.Column(VARCHAR(100), nullable=False)
+    name = db.Column(VARCHAR(40), nullable=False)
+    phone = db.Column(VARCHAR(20))
+    telephone = db.Column(VARCHAR(20))
+    role = db.Column(TINYINT(4), db.ForeignKey('tc_role.code'), index=True)
+    position = db.Column(VARCHAR(20), default='NULL')
+    department = db.Column(VARCHAR(45), default='NULL')
+    state = db.Column(ENUM('Registered','Deleted','Paused'))
+    registrant = db.Column(VARCHAR(20), default='NULL')
+    dtRegistered = db.Column(DATETIME)
+    modifier = db.Column(VARCHAR(20), default='NULL')
+    dtModified = db.Column(DATETIME)
+    dtLastConnected = db.Column(DATETIME, default='NULL')
+    note = db.Column(TEXT, default='NULL')
+    failCount = db.Column(SMALLINT(6), default=0)
+    company_registrant = db.relationship("CustomerCompany", backref='registrant', lazy='dynamic')
+    company_modifier = db.relationship("CustomerCompany", backref='modifier', lazy='dynamic')
 
 
-class User(UserMixin, db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(64), unique=True, index=True)
-    username = db.Column(db.String(64), unique=True, index=True)
-    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
-    password_hash = db.Column(db.String(128))
-    confirmed = db.Column(db.Boolean, default=False)
-    name = db.Column(db.String(64))
-    location = db.Column(db.String(64))
-    about_me = db.Column(db.Text())
-    member_since = db.Column(db.DateTime(), default=datetime.utcnow)
-    last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
-    avatar_hash = db.Column(db.String(32))
-    posts = db.relationship('Post', backref='author', lazy='dynamic')
-    followed = db.relationship('Follow',
-                               foreign_keys=[Follow.follower_id],
-                               backref=db.backref('follower', lazy='joined'),
-                               lazy='dynamic',
-                               cascade='all, delete-orphan')
-    followers = db.relationship('Follow',
-                                foreign_keys=[Follow.followed_id],
-                                backref=db.backref('followed', lazy='joined'),
-                                lazy='dynamic',
-                                cascade='all, delete-orphan')
-    comments = db.relationship('Comment', backref='author', lazy='dynamic')
-
-    @staticmethod
-    def add_self_follows():
-        for user in User.query.all():
-            if not user.is_following(user):
-                user.follow(user)
-                db.session.add(user)
-                db.session.commit()
-
-    def __init__(self, **kwargs):
-        super(User, self).__init__(**kwargs)
-        if self.role is None:
-            if self.email == current_app.config['FLASKY_ADMIN']:
-                self.role = Role.query.filter_by(name='Administrator').first()
-            if self.role is None:
-                self.role = Role.query.filter_by(default=True).first()
-        if self.email is not None and self.avatar_hash is None:
-            self.avatar_hash = self.gravatar_hash()
-        self.follow(self)
-
-    @property
-    def password(self):
-        raise AttributeError('password is not a readable attribute')
-
-    @password.setter
-    def password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-    def generate_confirmation_token(self, expiration=3600):
-        s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'confirm': self.id}).decode('utf-8')
-
-    def confirm(self, token):
-        s = Serializer(current_app.config['SECRET_KEY'])
-        try:
-            data = s.loads(token.encode('utf-8'))
-        except:
-            return False
-        if data.get('confirm') != self.id:
-            return False
-        self.confirmed = True
-        db.session.add(self)
-        return True
-
-    def generate_reset_token(self, expiration=3600):
-        s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps({'reset': self.id}).decode('utf-8')
-
-    @staticmethod
-    def reset_password(token, new_password):
-        s = Serializer(current_app.config['SECRET_KEY'])
-        try:
-            data = s.loads(token.encode('utf-8'))
-        except:
-            return False
-        user = User.query.get(data.get('reset'))
-        if user is None:
-            return False
-        user.password = new_password
-        db.session.add(user)
-        return True
-
-    def generate_email_change_token(self, new_email, expiration=3600):
-        s = Serializer(current_app.config['SECRET_KEY'], expiration)
-        return s.dumps(
-            {'change_email': self.id, 'new_email': new_email}).decode('utf-8')
-
-    def change_email(self, token):
-        s = Serializer(current_app.config['SECRET_KEY'])
-        try:
-            data = s.loads(token.encode('utf-8'))
-        except:
-            return False
-        if data.get('change_email') != self.id:
-            return False
-        new_email = data.get('new_email')
-        if new_email is None:
-            return False
-        if self.query.filter_by(email=new_email).first() is not None:
-            return False
-        self.email = new_email
-        self.avatar_hash = self.gravatar_hash()
-        db.session.add(self)
-        return True
-
-    def can(self, perm):
-        return self.role is not None and self.role.has_permission(perm)
-
-    def is_administrator(self):
-        return self.can(Permission.ADMIN)
-
-    def ping(self):
-        self.last_seen = datetime.utcnow()
-        db.session.add(self)
-
-    def gravatar_hash(self):
-        return hashlib.md5(self.email.lower().encode('utf-8')).hexdigest()
-
-    def gravatar(self, size=100, default='identicon', rating='g'):
-        url = 'https://secure.gravatar.com/avatar'
-        hash = self.avatar_hash or self.gravatar_hash()
-        return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
-            url=url, hash=hash, size=size, default=default, rating=rating)
-
-    def follow(self, user):
-        if not self.is_following(user):
-            f = Follow(follower=self, followed=user)
-            db.session.add(f)
-
-    def unfollow(self, user):
-        f = self.followed.filter_by(followed_id=user.id).first()
-        if f:
-            db.session.delete(f)
-
-    def is_following(self, user):
-        if user.id is None:
-            return False
-        return self.followed.filter_by(
-            followed_id=user.id).first() is not None
-
-    def is_followed_by(self, user):
-        if user.id is None:
-            return False
-        return self.followers.filter_by(
-            follower_id=user.id).first() is not None
-
-    @property
-    def followed_posts(self):
-        return Post.query.join(Follow, Follow.followed_id == Post.author_id)\
-            .filter(Follow.follower_id == self.id)
-
-    def to_json(self):
-        json_user = {
-            'url': url_for('api.get_user', id=self.id),
-            'username': self.username,
-            'member_since': self.member_since,
-            'last_seen': self.last_seen,
-            'posts_url': url_for('api.get_user_posts', id=self.id),
-            'followed_posts_url': url_for('api.get_user_followed_posts',
-                                          id=self.id),
-            'post_count': self.posts.count()
-        }
-        return json_user
-
-    def generate_auth_token(self, expiration):
-        s = Serializer(current_app.config['SECRET_KEY'],
-                       expires_in=expiration)
-        return s.dumps({'id': self.id}).decode('utf-8')
-
-    @staticmethod
-    def verify_auth_token(token):
-        s = Serializer(current_app.config['SECRET_KEY'])
-        try:
-            data = s.loads(token)
-        except:
-            return None
-        return User.query.get(data['id'])
-
-    def __repr__(self):
-        return '<User %r>' % self.username
+class CustomerAccount(db.Model):
+    __tablename__ = 'td_account'
+    idx = db.Column(INTEGER(11), primary_key=True, nullable=False, autoincrement=True)
+    id = db.Column(VARCHAR(20), nullable=False, unique=True)
+    pwd = db.Column(VARCHAR(45), nullable=False)
+    email = db.Column(VARCHAR(100), nullable=False)
+    name_kr = db.Column(VARCHAR(40), nullable=False, index=True)
+    name_en = db.Column(VARCHAR(40), default='NULL')
+    name_zh = db.Column(VARCHAR(40), default='NULL')
+    phone = db.Column(VARCHAR(20), nullable=False, index=True)
+    telephone = db.Column(VARCHAR(20), nullable=False)
+    fax = db.Column(VARCHAR(20), default='NULL')
+    companyCode = db.Column(CHAR(10), db.ForeignKey('td_company.code'), nullable=False, index=True)
+    role = db.Column(TINYINT(4), db.ForeignKey('tc_role.code'), nullable=False, index=True)
+    position = db.Column(VARCHAR(20), default='NULL')
+    department = db.Column(VARCHAR(40), default='NULL')
+    state = db.Column(ENUM('Registered','Deleted','Paused'))
+    registrant = db.Column(VARCHAR(20))
+    dtRegistered = db.Column(DATETIME)
+    modifier = db.Column(VARCHAR(20))
+    dtModified = db.Column(DATETIME)
+    dtLastConnected = db.Column(DATETIME, default='NULL')
+    note = db.Column(TEXT, default='NULL')
+    failCount = db.Column(SMALLINT(6), default=0)
 
 
-class AnonymousUser(AnonymousUserMixin):
-    def can(self, permissions):
-        return False
+# class LoginResult(db.Model):
+#     __tablename__ = 'tc_result'
+#     idx = db.Column(db.Integer, primary_key=True)
+#     code = db.Column(VARCHAR(20), unique=True)
+#     msg_kr = db.Column(VARCHAR(20))
+#     msg_en = db.Column(VARCHAR(20), default='NULL')
+#     msg_zh= db.Column(VARCHAR(20), default='NULL')
+#     msg = db.Column(VARCHAR(20))
+#
+#
+#
+# class App(db.Model):
+#     __tablename__ = 'td_app'
+#     idx = db.Column(db.Integer, primary_key=True)
+#     code = db.Column(VARCHAR(20), default='NULL')
+#     name_kr = db.Column(VARCHAR(20), default='NULL')
+#     name_en = db.Column(VARCHAR(20), default='NULL')
+#     name_zh = db.Column(VARCHAR(20), default='NULL')
+#     version = db.Column(VARCHAR(20))
+#     type = db.Column(VARCHAR(20))
+#     tagType = db.Column(VARCHAR(20))
+#     companyCode = db.Column(VARCHAR(20), db.ForeignKey('td_company.code'))
+#     registrant = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'))
+#     dtRegistered = db.Column(VARCHAR(20))
+#     modifier = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'))
+#     dtModified = db.Column(VARCHAR(20))
+#     note = db.Column(VARCHAR(20), default='NULL')
+#     dtPublished = db.Column(VARCHAR(20), default='NULL')
+#     attachedPath = db.Column(VARCHAR(20), default='NULL')
+#     osType = db.Column(VARCHAR(20))
+#     state = db.Column(VARCHAR(20), default='Disable')
+#     description = db.Column(VARCHAR(20), default='NULL')
+#     limitCertHour = db.Column(VARCHAR(20), default='8')
+#     limitCertCnt = db.Column(VARCHAR(20), default='50')
+#     updateUrl = db.Column(VARCHAR(20), default='NULL')
+#
+#
+#
+# class Serviceterm(db.Model):
+#     __tablename__ = 'td_service_term'
+#     idx = db.Column(db.Integer, primary_key=True)
+#     appTagType = db.Column(VARCHAR(20), default='H')
+#     version = db.Column(VARCHAR(20), unique=True)
+#     title = db.Column(VARCHAR(20))
+#     termUrl = db.Column(VARCHAR(20))
+#     state = db.Column(VARCHAR(20))
+#     dtRegistered = db.Column(VARCHAR(20), default='NULL')
+#     dtPublished = db.Column(VARCHAR(20), default='NULL')
+#     dtDeleted = db.Column(VARCHAR(20))
+#
+# class Locationterm(db.Model):
+#     __tablename__ = 'td_location_term'
+#     idx = db.Column(db.Integer, primary_key=True)
+#     version = db.Column(VARCHAR(20), unique=True)
+#     title = db.Column(VARCHAR(20))
+#     termUrl = db.Column(VARCHAR(20))
+#     state = db.Column(VARCHAR(20))
+#     dtRegistered = db.Column(VARCHAR(20), default='NULL')
+#     dtPublished = db.Column(VARCHAR(20), default='NULL')
+#     dtDeleted = db.Column(VARCHAR(20))
+#
+# class DeviceModel(db.Model):
+#     __tablename__ = 'td_model'
+#     idx = db.Column(db.Integer, primary_key=True)
+#     name= db.Column(VARCHAR(20), unique=True)
+#     osType = db.Column(VARCHAR(20))
+#     resolution = db.Column(VARCHAR(20), default='NULL')
+#     dtRegistered = db.Column(VARCHAR(20))
+#     dtModified = db.Column(VARCHAR(20))
+#
+#
+# class Device(db.Model):
+#     __tablename__ = 'td_device'
+#     idx = db.Column(db.Integer, primary_key=True)
+#     pushToken = db.Column(VARCHAR(20))
+#     model = db.Column(VARCHAR(20))
+#     osVersion = db.Column(VARCHAR(20))
+#     appVersion = db.Column(VARCHAR(20))
+#     appCode = db.Column(VARCHAR(20), db.Foreingnkey('td_app.code'), default='NULL')
+#     appTagType = db.Column(VARCHAR(20), default='H')
+#     agreeTerm = db.Column(db.Integer, default=0)
+#     agreeGPS = db.Column(db.Integer, default=0)
+#     useBackground = db.Column(db.Integer, default=1)
+#     language = db.Column(VARCHAR(20))
+#     languageCode = db.Column(VARCHAR(20), default='NULL')
+#     serverName = db.Column(VARCHAR(20), default='NULL')
+#     state = db.Column(VARCHAR(20))
+#     dtRegistered = db.Column(VARCHAR(20))
+#     dtLastConnected = db.Column(VARCHAR(20))
+#     dtTermAgreement = db.Column(VARCHAR(20), default='NULL')
+#     serviceTermVersion = db.Column(VARCHAR(20), db.Freingkey('td_servive_term.version'), default='NULL')
+#     locationTermVersion = db.Column(VARCHAR(20), db.Freingkey('td_location_term.version'), default='NULL')
+#     ipAddr = db.Column(VARCHAR(20), default='NULL')
+#
+#
+#
 
-    def is_administrator(self):
-        return False
-
-login_manager.anonymous_user = AnonymousUser
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
-
-class Post(db.Model):
-    __tablename__ = 'posts'
-    id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.Text)
-    body_html = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    comments = db.relationship('Comment', backref='post', lazy='dynamic')
-
-    @staticmethod
-    def on_changed_body(target, value, oldvalue, initiator):
-        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
-                        'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
-                        'h1', 'h2', 'h3', 'p']
-        target.body_html = bleach.linkify(bleach.clean(
-            markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True))
-
-    def to_json(self):
-        json_post = {
-            'url': url_for('api.get_post', id=self.id),
-            'body': self.body,
-            'body_html': self.body_html,
-            'timestamp': self.timestamp,
-            'author_url': url_for('api.get_user', id=self.author_id),
-            'comments_url': url_for('api.get_post_comments', id=self.id),
-            'comment_count': self.comments.count()
-        }
-        return json_post
-
-    @staticmethod
-    def from_json(json_post):
-        body = json_post.get('body')
-        if body is None or body == '':
-            raise ValidationError('post does not have a body')
-        return Post(body=body)
-
-
-db.event.listen(Post.body, 'set', Post.on_changed_body)
-
-
-class Comment(db.Model):
-    __tablename__ = 'comments'
-    id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.Text)
-    body_html = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    disabled = db.Column(db.Boolean)
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
-
-    @staticmethod
-    def on_changed_body(target, value, oldvalue, initiator):
-        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'code', 'em', 'i',
-                        'strong']
-        target.body_html = bleach.linkify(bleach.clean(
-            markdown(value, output_format='html'),
-            tags=allowed_tags, strip=True))
-
-    def to_json(self):
-        json_comment = {
-            'url': url_for('api.get_comment', id=self.id),
-            'post_url': url_for('api.get_post', id=self.post_id),
-            'body': self.body,
-            'body_html': self.body_html,
-            'timestamp': self.timestamp,
-            'author_url': url_for('api.get_user', id=self.author_id),
-        }
-        return json_comment
-
-    @staticmethod
-    def from_json(json_comment):
-        body = json_comment.get('body')
-        if body is None or body == '':
-            raise ValidationError('comment does not have a body')
-        return Comment(body=body)
-
-
-db.event.listen(Comment.body, 'set', Comment.on_changed_body)
+#
+# class Holotageimage(db.Model):
+#     __tablename__ = 'ti_holotag'
+#     idx = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(VARCHAR(20), unique=True)
+#     tagIdx = db.Column(db.Integer, db.ForeignKey('td_holotag.idx'))
+#     path = db.Column(VARCHAR(20))
+#     state = db.Column(VARCHAR(20))
+#     registarant = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'))
+#     dtRegistered = db.Column(VARCHAR(20))
+#     modigier = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'))
+#     dtModified = db.Column(VARCHAR(20))
+#     note = db.Column(VARCHAR(20),default='NULL')
+#
+#
+# #
+# class ProductManagement(db.Model):
+#     __tablename__ = 'td_holotage'
+#     idx = db.Column(db.Integer, primary_key=True)
+#     code = db.Column(VARCHAR(20), nuique=True)
+#     name_kr = db.Column(VARCHAR(20))
+#     name_en = db.Column(VARCHAR(20), default='NULL')
+#     name_zh = db.Column(VARCHAR(20), default='NULL')
+#     companyCode = db.Column(db.Integer, db.ForeignKey('td_company.code'), default='NULL')
+#     state = db.Column(VARCHAR(20))
+#     attachType = db.Column(VARCHAR(20))
+#     certOverCnt = db.Column(db.Integer)
+#     certOverManyCnt = db.Column(db.Integer)
+#     registrant = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'))
+#     dtRegistered = db.Column(VARCHAR(20))
+#     modifier = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'))
+#     dtModified = db.Column(VARCHAR(20))
+#     sourceImage = db.Column(VARCHAR(20))
+#     note = db.Column(VARCHAR(20), default='NULL')
+#     mappingCode = db.Column(VARCHAR(20), default='NULL')
+#     sqrUrl = db.Column(VARCHAR(20), default='NULL')
+#     hVersion = db.Column(VARCHAR(20), db.ForeignKey('td_tag_version.id'))
+#     sqrVer = db.Column(db.Integer)
+#
+#
+#
+#
+# class TagtypeManagement(db.Model):
+#     __tablename__ = 'td_tag_version'
+#     idx = db.Column(db.Integer, primary_key=True)
+#     version = db.Column(VARCHAR(20), unique=True)
+#     type = db.Column(VARCHAR(20))
+#     name_kr = db.Column(VARCHAR(20))
+#     name_en = db.Column(VARCHAR(20))
+#     name_zh = db.Column(VARCHAR(20))
+#     state = db.Column(VARCHAR(20), default='Disable')
+#     width = db.Column(db.Integer)
+#     height =db.Column(db.Integer)
+#     description = db.Column(VARCHAR(20))
+#     registrant = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'))
+#     dtRegistered = db.Column(VARCHAR(20))
+#     modifier = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'))
+#     dtModified = db.Column(VARCHAR(20))
+#     sourceImage = db.Column(VARCHAR(20))
+#     note = db.Column(VARCHAR(20), default='NULL')
+#
+#
+#
+#
+# class ProductCertification(db.Model):
+#     __tablename__ = 'th_certification'
+#     idx = db.Column(db.Integer, primary_key=True)
+#     deviceID = db.Column(VARCHAR(20))
+#     companyCode = db.Column(VARCHAR(20), db.ForeignKey('td_company.code'), default='NULL')
+#     tagType = db.Column(VARCHAR(20), default='NULL')
+#     tagCode = db.Column(VARCHAR(20), default='NULL')
+#     hVersion = db.Column(VARCHAR(20), db.ForeignKey('td_tag_vesion.version'), default='NULL')
+#     mappingCode = db.Column(VARCHAR(20), default='NULL')
+#     image = db.Colmn(VARCHAR(20), default='NULL')
+#     result = db.Colmn(VARCHAR(20))
+#     resultDetail = db.Colmn(db.Integer, default=0)
+#     osType = db.Colmn(VARCHAR(20))
+#     dtCertificate = db.Column(VARCHAR(20))
+#     longitude = db.Column(VARCHAR(20), default='NULL')
+#     latitude = db.Column(VARCHAR(20), default='NULL')
+#     regionIdx = db.Column(db.Integer, default=-1)
+#     random = db.Column(VARCHAR(20), default='NULL')
+#     randomCnt = db.Column(db.Integer, default=0)
+#     retailerID = db.Column(VARCHAR(20), default='NULL')
+#     mode = db.Column(VARCHAR(20), default='NULL')
+#     data = db.Column(VARCHAR(20), default='NULL')
+#
+#
+#
+# class Report(db.Model):
+#     __tablename__ = 'th_report'
+#     idx = db.Column(db.Integer, primary_key=True)
+#     deviceID = db.Column(VARCHAR(20), db.ForeignKey('td_device.pushToken'))
+#     companyCode = db.Column(VARCHAR(20), db.ForeignKey('td_company.code'), default='NULL')
+#     tagCode = db.Column(VARCHAR(20), default='NULL')
+#     hVersion = db.Column(VARCHAR(20), db.ForeignKey('td_tag_vesion.version'), default='NULL')
+#     image = db.Colmn(VARCHAR(20))
+#     imageProduct = db.Colmn(VARCHAR(20), default='NULL')
+#     latitude = db.Colmn(VARCHAR(20), default='NULL')
+#     longitude = db.Colmn(VARCHAR(20), default='NULL')
+#     address = db.Colmn(VARCHAR(20), default='NULL')
+#     dtCreated = db.Colmn(VARCHAR(20))
+#     email = db.Colmn(VARCHAR(20), default='NULL')
+#     content = db.Colmn(VARCHAR(20), default='NULL')
+#     category = db.Colmn(db.Integer, default='NULL')
+#     contact = db.Colmn(VARCHAR(20), default='NULL')
+#     contactType = db.Colmn(VARCHAR(20), default='NULL')
+#     purchasePlace = db.Colmn(VARCHAR(20), default='NULL')
+#     onlinePurchasePlace = db.Colmn(VARCHAR(20), default='NULL')
+#     purchaseDate = db.Colmn(VARCHAR(20), default='NULL')
+#     type = db.Colmn(VARCHAR(20))
+#     tagType = db.Column(VARCHAR(20), default='NULL')
+#     mappingCode = db.Column(VARCHAR(20), default='NULL')
+#     random = db.Colmn(VARCHAR(20), default='NULL')
+#     retailerID = db.Colmn(VARCHAR(20), default='NULL')
+#     state = db.Colmn(VARCHAR(20), default='Question')
+#     answerer = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), default='NULL')
+#     dtAnswer = db.Column(VARCHAR(20), default='NULL')
+#     aContent = db.Column(VARCHAR(20), default='NULL')
+#     osType = db.Colmn(VARCHAR(20))
+#     memo = db.Colmn(VARCHAR(20), default='NULL')
+#     certificationIdx = db.Column(db.Integer, default=-1)
+#     importantYN = db.Colmn(VARCHAR(20), default='N')
+#     codeState = db.Colmn(VARCHAR(20), default='NULL')
+#     codeChannel = db.Colmn(VARCHAR(20), default='NULL')
+#     resultDetail = db.Column(db.Integer, default=0)
+#     data = db.Colmn(VARCHAR(20), default='NULL')
+#
+# class Loginlog(db.Model):
+#     __tablename__ = 'tl_login'
+#     idx = db.Column(db.Integer, primary_key=True)
+#     id = db.Column(VARCHAR(20))
+#     resultCode = db.Column(VARCHAR(20))
+#     dtAttempted = db.Column(VARCHAR(20))
+#     remoteAddr = db.Column(VARCHAR(20))
+#
+# class Blacklist(db.Model):
+#     __tablename__ = 'td_black_list'
+#     idx= db.Column(db.Integer, primary_key=True)
+#     pushToken  = db.Colmn(VARCHAR(20))
+#     blType
+#     delYN
+#     dtRegistered
+#     registrant
+#     dtModified
+#     modifier
