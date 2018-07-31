@@ -7,24 +7,25 @@ from .exceptions import ValidationError
 from sqlalchemy.dialects.mysql import TINYINT, VARCHAR, ENUM, INTEGER, TEXT, DATETIME, CHAR, SMALLINT, BIGINT
 from . import db
 
-
 class Role(db.Model):
     __tablename__ = 'tc_role'
     idx = db.Column(INTEGER(11), primary_key=True, nullable=False, autoincrement=True)
-    code = db.Column(TINYINT(4), unique=True, nullable=False)
+    code = db.Column(TINYINT(4), unique=True)
     name_kr = db.Column(VARCHAR(45), nullable=False)
     name_en = db.Column(VARCHAR(45), default='NULL')
     name_zh = db.Column(VARCHAR(45), default='NULL')
     name_kr_forAccount = db.Column(VARCHAR(45), default='NULL')
     name_en_forAccount = db.Column(VARCHAR(45), default='NULL')
     name_zh_forAccount = db.Column(VARCHAR(45), default='NULL')
-    state = db.Column(ENUM('Registered','Deleted','Paused'), nullable=False,)
+    state = db.Column(ENUM('Registered','Deleted','Paused'), nullable=False)
     description = db.Column(TEXT, default='NULL')
     dtRegistered = db.Column(DATETIME, nullable=False)
     dtModified = db.Column(DATETIME, nullable=False)
     isIcraft = db.Column(TINYINT(1), nullable=False, default=0)
     icraft_role = db.relationship('ICraftAccount', backref='role', lazy='dynamic')
     customer_role = db.relationship('CustomerAccount', backref='role', lazy='dynamic')
+
+
 
 
 class LoginResult(db.Model):
@@ -36,32 +37,6 @@ class LoginResult(db.Model):
     msg_zh= db.Column(VARCHAR(200), default='NULL')
     msg = db.Column(TEXT, nullable=False)
 
-
-class App(db.Model):
-    __tablename__ = 'td_app'
-    idx = db.Column(INTEGER(11), primary_key=True, nullable=False, autoincrement=True)
-    code = db.Column(CHAR(10), default='NULL', index=True)
-    name_kr = db.Column(VARCHAR(64), default='NULL')
-    name_en = db.Column(VARCHAR(64), default='NULL')
-    name_zh = db.Column(VARCHAR(64), default='NULL')
-    version = db.Column(CHAR(11), nullable=False)
-    type = db.Column(ENUM('LIB', 'APP'), nullable=False)
-    tagType = db.Column(ENUM('HOLOTAG_ONLY', 'HOLOTAG_BARCODE', 'HYBRIDTAG', 'RANDOMTAG', 'SQRTAG'), default='NULL')
-    companyCode = db.Column(CHAR(10), db.ForeignKey('td_company.code'), nullable=False, index=True)
-    registrant = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), nullable=False, index=True)
-    dtRegistered = db.Column(DATETIME, nullable=False)
-    modifier = db.Column(VARCHAR(20), db.ForeignKey'td_admin.id'), nullable=False, index=True)
-    dtModified = db.Column(DATETIME, nullable=False)
-    note = db.Column(TEXT, default='NULL')
-    dtPublished = db.Column(DATETIME, default='NULL')
-    attachedPath = db.Column(TEXT, default='NULL')
-    osType = db.Column(ENUM('iOS', 'Android', 'All'), nullable=False)
-    state = db.Column(ENUM('Enable', 'Disable', 'Deleted'), nullable=False, default='Disable')
-    description = db.Column(TEXT, default='NULL')
-    limitCertHour = db.Column(VARCHAR(50), default='8')
-    limitCertCnt = db.Column(VARCHAR(50), nullable=False, default='50')
-    updateUrl = db.Column(VARCHAR(128), default='NULL')
-    device_appcode = db.relationship('Device', backref='appCode', lazy='dynamic')
 
 
 class Serviceterm(db.Model):
@@ -92,6 +67,7 @@ class Locationterm(db.Model):
     device_locationTermVersion = db.relationship('Device', backref='locationTermVersion', lazy='dynamic')
 
 
+
 class DeviceModel(db.Model):
     __tablename__ = 'td_model'
     idx = db.Column(INTEGER(11), primary_key=True, nullable=False, autoincrement=True)
@@ -100,31 +76,6 @@ class DeviceModel(db.Model):
     resolution = db.Column(TEXT, default='NULL')
     dtRegistered = db.Column(DATETIME, nullable=False)
     dtModified = db.Column(DATETIME, nullable=False)
-
-
-class Device(db.Model):
-    __tablename__ = 'td_device'
-    idx = db.Column(BIGINT(20), primary_key=True, nullable=False, autoincrement=True)
-    pushToken = db.Column(VARCHAR(50), nullable=False, unique=True)
-    model = db.Column(VARCHAR(50), nullable=False, index=True)
-    osVersion = db.Column(VARCHAR(20), nullable=False)
-    appVersion = db.Column(CHAR(11), nullable=False)
-    appCode = db.Column(CHAR(10), db.ForeignKey('td_app.code'), default='NULL', index=True)
-    appTagType = db.Column(CHAR(1), nullable=False, default='H')
-    agreeTerm = db.Column(TINYINT(1), nullable=False, default=0)
-    agreeGPS = db.Column(TINYINT(1), nullable=False, default=0)
-    useBackground = db.Column(TINYINT(1), nullable=False, default=1)
-    language = db.Column(VARCHAR(4), nullable=False)
-    languageCode = db.Column(ENUM('Korean', 'English', 'Chinese'), default='NULL')
-    serverName = db.Column(VARCHAR(32), default='NULL')
-    state = db.Column(ENUM('Registered', 'Deleted', 'Paused'), nullable=False)
-    dtRegistered = db.Column(DATETIME, nullable=False)
-    dtLastConnected = db.Column(DATETIME, nullable=False)
-    dtTermAgreement = db.Column(DATETIME, default='NULL')
-    serviceTermVersion = db.Column(VARCHAR(20), db.ForeignKey('td_service_term.version'), default='NULL', index=True)
-    locationTermVersion = db.Column(VARCHAR(20), db.ForeignKey('td_location_term.version'), default='NULL', index=True)
-    ipAddr = db.Column(VARCHAR(24), default='NULL')
-    report_deviceid = db.relationship('Report', backref='deviceID', lazy='dynamic')
 
 
 
@@ -159,21 +110,60 @@ class ICraftAccount(db.Model):
     tagevesion_registrant = db.relationship('TagtypeManagement', backref='registrant', lazy='dynamic')
     tagevesion_modifier = db.relationship('TagtypeManagement', backref='modifier', lazy='dynamic')
     report_answerer = db.relationship('Report', backref='answerer', lazy='dynamic')
+    banner_registrant = db.relationship('Banner', backref='registrant', lazy='dynamic')
+    banner_modifier = db.relationship('Banner', backref='modifier', lazy='dynamic')
 
 
-class HoloageImage(db.Model):
-    __tablename__ = 'ti_holotag'
+class Loginlog(db.Model):
+    __tablename__ = 'tl_login'
+    idx = db.Column(BIGINT(20), primary_key=True, nullable=False, autoincrement=True)
+    id = db.Column(VARCHAR(20), nullable=False)
+    resultCode = db.Column(CHAR(4), nullable=False)
+    dtAttempted = db.Column(DATETIME, nullable=False)
+    remoteAddr = db.Column(VARCHAR(23), nullable=False)
+
+
+
+class CertReportCount(db.Model):
+    __tablename__ = 'ts_cert_report_count'
     idx = db.Column(INTEGER(11), primary_key=True, nullable=False, autoincrement=True)
-    name = db.Column(VARCHAR(45), nullable=False)
-    tagIdx = db.Column(INTEGER(11), db.ForeignKey('td_holotag.idx'), nullable=False, index=True)
-    path = db.Column(TEXT, nullable=False)
-    state = db.Column(ENUM('Registered', 'Deleted', 'Paused'), nullable=False)
-    registarant = db.Column(VARCHAR(45), db.ForeignKey('td_admin.id'), nullable=False, index=True)
-    dtRegistered = db.Column(DATETIME, nullable=False)
-    modifier = db.Column(VARCHAR(45), db.ForeignKey('td_admin.id'), nullable=False, index=True)
-    dtModified = db.Column(DATETIME, nullable=False)
-    note = db.Column(TEXT, default='NULL')
+    companyCode = db.Column(VARCHAR(10), default='NULL', index=True)
+    tagType = db.Column(ENUM('HOLOTAG_ONLY', 'HOLOTAG_BARCODE', 'HYBRIDTAG', 'RANDOMTAG', 'SQRTAG'), default='NULL')
+    tagCode = db.Column(VARCHAR(10), default='NULL', index=True)
+    osType = db.Column(ENUM('iOS', 'Android', 'Unknown'), nullable=False, index=True)
+    type = db.Column(VARCHAR(30), nullable=False, index=True)
+    date = db.Column(CHAR(8), nullable=False, index=True)
+    count = db.Column(INTEGER(11), default=0, nullable=False)
+    registerDt = db.Column(DATETIME, default='NULL')
 
+
+
+
+class ActiveUniqueCount(db.Model):
+    __tablename__ = 'ts_active_unique_count'
+    idx = db.Column(INTEGER(11), primary_key=True, nullable=False, autoincrement=True)
+    companyCode = db.Column(VARCHAR(10), default='NULL', index=True)
+    appTagType = db.Column(CHAR(1), nullable=False, default='H')
+    osType = db.Column(ENUM('iOS', 'Android', 'Unknown'), nullable=False, index=True)
+    date = db.Column(CHAR(8), nullable=False, index=True)
+    active_count = db.Column(INTEGER(11), nullable=False, default=0)
+    unique_count = db.Column(INTEGER(11), nullable=False, default=0)
+    cert_unique_count = db.Column(INTEGER(11), nullable=False, default=0)
+    regApp_count = db.Column(INTEGER(11), default='N')
+    registerDt = db.Column(DATETIME, default='CURRENT_TIMESTAMP')
+
+
+
+class Blacklist(db.Model):
+    __tablename__ = 'td_black_list'
+    idx = db.Column(INTEGER(11), nullable=False, autoincrement=True, index=True)
+    pushToken = db.Column(VARCHAR(50), primary_key=True, nullable=False)
+    blType = db.Column(ENUM('C', 'O'), nullable=False, default='C')
+    delYN = db.Column(VARCHAR(1), nullable=False, default='N')
+    dtRegistered = db.Column(DATETIME, nullable=False)
+    registrant = db.Column(VARCHAR(50), nullable=False, default='CURRENT_TIMESTAMP')
+    dtModified = db.Column(DATETIME, nullable=False, default='CURRENT_TIMESTAMP')
+    modifier = db.Column(VARCHAR(50), nullable=False)
 
 
 class CustomerCompany(db.Model):
@@ -214,10 +204,129 @@ class CustomerCompany(db.Model):
     retailer_companycode = db.relationship('Retailer', backref='companyCode', lazy='dynamic')
 
 
+
+class App(db.Model):
+    __tablename__ = 'td_app'
+    idx = db.Column(INTEGER(11), primary_key=True, nullable=False, autoincrement=True)
+    code = db.Column(CHAR(10), default='NULL', index=True)
+    name_kr = db.Column(VARCHAR(64), default='NULL')
+    name_en = db.Column(VARCHAR(64), default='NULL')
+    name_zh = db.Column(VARCHAR(64), default='NULL')
+    version = db.Column(CHAR(11), nullable=False)
+    type = db.Column(ENUM('LIB', 'APP'), nullable=False)
+    tagType = db.Column(ENUM('HOLOTAG_ONLY', 'HOLOTAG_BARCODE', 'HYBRIDTAG', 'RANDOMTAG', 'SQRTAG'), default='NULL')
+    companyCode = db.Column(CHAR(10), db.ForeignKey('td_company.code'), nullable=False, index=True)
+    registrant = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), nullable=False, index=True)
+    dtRegistered = db.Column(DATETIME, nullable=False)
+    modifier = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), nullable=False, index=True)
+    dtModified = db.Column(DATETIME, nullable=False)
+    note = db.Column(TEXT, default='NULL')
+    dtPublished = db.Column(DATETIME, default='NULL')
+    attachedPath = db.Column(TEXT, default='NULL')
+    osType = db.Column(ENUM('iOS', 'Android', 'All'), nullable=False)
+    state = db.Column(ENUM('Enable', 'Disable', 'Deleted'), nullable=False, default='Disable')
+    description = db.Column(TEXT, default='NULL')
+    limitCertHour = db.Column(VARCHAR(50), default='8')
+    limitCertCnt = db.Column(VARCHAR(50), nullable=False, default='50')
+    updateUrl = db.Column(VARCHAR(128), default='NULL')
+    device_appcode = db.relationship('Device', backref='appCode', lazy='dynamic')
+
+
+class TagtypeManagement(db.Model):
+    __tablename__ = 'td_tag_version'
+    idx = db.Column(INTEGER(11), primary_key=True, nullable=False, autoincrement=True)
+    version = db.Column(CHAR(11), unique=True, nullable=False)
+    type = db.Column(ENUM('HOLOTAG_ONLY','HOLOTAG_BARCODE','HYBRIDTAG','RANDOMTAG','SQRTAG'), nullable=False)
+    name_kr = db.Column(VARCHAR(60), nullable=False)
+    name_en = db.Column(VARCHAR(60), nullable=False)
+    name_zh = db.Column(VARCHAR(60), nullable=False)
+    state = db.Column(ENUM('Enalbe','Disable','Deleted'), default='Disable', nullable=False)
+    width = db.Column(INTEGER(11), nullable=False)
+    height =db.Column(INTEGER(11), nullable=False)
+    description = db.Column(TEXT, nullable=False)
+    registrant = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), nullable=False)
+    dtRegistered = db.Column(DATETIME, nullable=False)
+    modifier = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), nullable=False)
+    dtModified = db.Column(DATETIME, default='NULL')
+    note = db.Column(TEXT)
+    tag_version = db.relationship('ProductManagement', backref='hVersion', lazy='dynamic')
+    tag_certification = db.relationship('ProductCertification', backref='hVersion', lazy='dynamic')
+    tag_report = db.relationship('Report', backref='hVersion', lazy='dynamic')
+
+
+
+class Device(db.Model):
+    __tablename__ = 'td_device'
+    idx = db.Column(BIGINT(20), primary_key=True, nullable=False, autoincrement=True)
+    pushToken = db.Column(VARCHAR(50), nullable=False, unique=True)
+    model = db.Column(VARCHAR(50), nullable=False, index=True)
+    osVersion = db.Column(VARCHAR(20), nullable=False)
+    appVersion = db.Column(CHAR(11), nullable=False)
+    appCode = db.Column(CHAR(10), db.ForeignKey('td_app.code'), default='NULL', index=True)
+    appTagType = db.Column(CHAR(1), nullable=False, default='H')
+    agreeTerm = db.Column(TINYINT(1), nullable=False, default=0)
+    agreeGPS = db.Column(TINYINT(1), nullable=False, default=0)
+    useBackground = db.Column(TINYINT(1), nullable=False, default=1)
+    language = db.Column(VARCHAR(4), nullable=False)
+    languageCode = db.Column(ENUM('Korean', 'English', 'Chinese'), default='NULL')
+    serverName = db.Column(VARCHAR(32), default='NULL')
+    state = db.Column(ENUM('Registered', 'Deleted', 'Paused'), nullable=False)
+    dtRegistered = db.Column(DATETIME, nullable=False)
+    dtLastConnected = db.Column(DATETIME, nullable=False)
+    dtTermAgreement = db.Column(DATETIME, default='NULL')
+    ipAddr = db.Column(VARCHAR(24), default='NULL')
+    serviceTermVersion = db.Column(VARCHAR(20), db.ForeignKey('td_service_term.version'), default='NULL', index=True)
+    locationTermVersion = db.Column(VARCHAR(20), db.ForeignKey('td_location_term.version'), default='NULL', index=True)
+    report_deviceid = db.relationship('Report', backref='deviceID', lazy='dynamic')
+
+
+
+
+
+class ProductManagement(db.Model):
+    __tablename__ = 'td_holotag'
+    idx = db.Column(INTEGER(11), primary_key=True, nullable=False, autoincrement=True)
+    code = db.Column(CHAR(10), unique=True, nullable=False)
+    name_kr = db.Column(VARCHAR(100), nullable=False)
+    name_en = db.Column(VARCHAR(45), default='NULL')
+    name_zh = db.Column(VARCHAR(45), default='NULL')
+    companyCode = db.Column(CHAR(10), db.ForeignKey('td_company.code'), unique=True, default='NULL', index=True)
+    state = db.Column(ENUM('Registered','Deleted','Paused'), nullable=False)
+    attachType = db.Column(ENUM('LABELBOX','POUCH','POUCH_PRINT'), default='NULL')
+    certOverCnt = db.Column(INTEGER(11), default='NULL')
+    certOverManyCnt = db.Column(INTEGER(11), default='NULL')
+    registrant = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), nullable=False, index=True)
+    dtRegistered = db.Column(DATETIME, nullable=False)
+    modifier = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), nullable=False, index=True)
+    dtModified = db.Column(DATETIME, nullable=False)
+    sourceImage = db.Column(TEXT, nullable=False)
+    note = db.Column(TEXT, default='NULL')
+    hVersion = db.Column(CHAR(11), db.ForeignKey('td_tag_version.version'), default='NULL', index=True)
+    mappingCode = db.Column(VARCHAR(10), default='NULL', index=True)
+    sqrUrl = db.Column(VARCHAR(32), default='NULL')
+    sqrVer = db.Column(INTEGER(2), nullable=False, default=0)
+    tageimage_tagidx = db.relationship('HolotagImage', backref='tagIdx', lazy='dynamic')
+
+
+class HoloageImage(db.Model):
+    __tablename__ = 'ti_holotag'
+    idx = db.Column(INTEGER(11), primary_key=True, nullable=False, autoincrement=True)
+    name = db.Column(VARCHAR(45), nullable=False)
+    tagIdx = db.Column(INTEGER(11), db.ForeignKey('td_holotag.idx'), nullable=False, index=True)
+    path = db.Column(TEXT, nullable=False)
+    state = db.Column(ENUM('Registered', 'Deleted', 'Paused'), nullable=False)
+    registarant = db.Column(VARCHAR(45), db.ForeignKey('td_admin.id'), nullable=False, index=True)
+    dtRegistered = db.Column(DATETIME, nullable=False)
+    modifier = db.Column(VARCHAR(45), db.ForeignKey('td_admin.id'), nullable=False, index=True)
+    dtModified = db.Column(DATETIME, nullable=False)
+    note = db.Column(TEXT, default='NULL')
+
+
+
 class CustomerAccount(db.Model):
     __tablename__ = 'td_account'
     idx = db.Column(INTEGER(11), primary_key=True, nullable=False, autoincrement=True)
-    id = db.Column(VARCHAR(20), nullable=False, unique=True)
+    id = db.Column(VARCHAR(20), primary_key=True, nullable=False, unique=True)
     pwd = db.Column(VARCHAR(45), nullable=False)
     email = db.Column(VARCHAR(100), nullable=False)
     name_kr = db.Column(VARCHAR(40), nullable=False, index=True)
@@ -241,51 +350,6 @@ class CustomerAccount(db.Model):
 
 
 
-class ProductManagement(db.Model):
-    __tablename__ = 'td_holotage'
-    idx = db.Column(INTEGER(11), primary_key=True, nullable=False, autoincrement=True)
-    code = db.Column(CHAR(10), nuique=True, nullable=False)
-    name_kr = db.Column(VARCHAR(100), nullable=False)
-    name_en = db.Column(VARCHAR(45), default='NULL')
-    name_zh = db.Column(VARCHAR(45), default='NULL')
-    companyCode = db.Column(CHAR(10), db.ForeignKey('td_company.code'), nuique=True, default='NULL', index=True)
-    state = db.Column(ENUM('Registered','Deleted','Paused'), nullable=False)
-    attachType = db.Column(ENUM('LABELBOX','POUCH','POUCH_PRINT'), default='NULL')
-    certOverCnt = db.Column(INTEGER(11), default='NULL')
-    certOverManyCnt = db.Column(INTEGER(11), default='NULL')
-    registrant = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), nullable=False, index=True)
-    dtRegistered = db.Column(DATETIME, nullable=False)
-    modifier = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), nullable=False, index=True)
-    dtModified = db.Column(DATETIME, nullable=False)
-    sourceImage = db.Column(TEXT, nullable=False)
-    note = db.Column(TEXT, default='NULL')
-    mappingCode = db.Column(CHAR(11), nullable=False, index=True)
-    sqrUrl = db.Column(VARCHAR(10), default='NULL')
-    hVersion = db.Column(VARCHAR(32), db.ForeignKey('td_tag_version.version'), default='NULL', index=True)
-    sqrVer = db.Column(INTEGER(2), nullable=False, default=0)
-    tageimage_tagidx = db.relationship('HolotageImage', backref='tagIdx', lazy='dynamic')
-
-
-class TagtypeManagement(db.Model):
-    __tablename__ = 'td_tag_version'
-    idx = db.Column(INTEGER(11), primary_key=True, nullable=False, autoincrement=True)
-    version = db.Column(CHAR(11), unique=True, nullable=False)
-    type = db.Column(ENUM('HOLOTAG_ONLY','HOLOTAG_BARCODE','HYBRIDTAG','RANDOMTAG','SQRTAG'), nullable=False)
-    name_kr = db.Column(VARCHAR(60), nullable=False)
-    name_en = db.Column(VARCHAR(60), nullable=False)
-    name_zh = db.Column(VARCHAR(60), nullable=False)
-    state = db.Column(ENUM('Enalbe','Disable','Deleted'), default='Disable', nullable=False)
-    width = db.Column(INTEGER(11), nullable=False)
-    height =db.Column(INTEGER(11), nullable=False)
-    description = db.Column(TEXT, nullable=False)
-    registrant = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), nullable=False)
-    dtRegistered = db.Column(DATETIME, nullable=False)
-    modifier = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), nullable=False)
-    dtModified = db.Column(DATETIME, default='NULL')
-    note = db.Column(TEXT)
-    tag_version = db.relationship('td_holotag', backref='hVersion', lazy='dynamic')
-    tag_certification = db.relationship('td_certification', backref='hVersion', lazy='dynamic')
-    tag_report = db.relationship('th_report', backref='hVersion', lazy='dynamic')
 
 class ProductCertification(db.Model):
     __tablename__ = 'th_certification'
@@ -294,10 +358,10 @@ class ProductCertification(db.Model):
     companyCode = db.Column(CHAR(10), db.ForeignKey('td_company.code'), default='NULL')
     tagType = db.Column(ENUM('HOLOTAG_ONLY', 'HOLOTAG_BARCODE', 'HYBRIDTAG', 'RANDOMTAG', 'SQRTAG'), default='NULL')
     tagCode = db.Column(CHAR(10), default='NULL')
-    hVersion = db.Column(CHAR(11), db.ForeignKey('td_tag_vesion.version'), default='NULL')
+    hVersion = db.Column(CHAR(11), db.ForeignKey('td_tag_version.version'), default='NULL')
     mappingCode = db.Column(VARCHAR(10), default='NULL')
     image = db.Column(VARCHAR(128), default='NULL')
-    result = db.Column(ENUM('Genuine', 'Counterfeit', 'Revalidation', 'Exprired', 'Invalid', 'Retry', 'OverCert', 'DifferentQR', 'CommonQR', 'NotiOverCert'), nullable=False)
+    result = db.Column(ENUM('Geunine', 'Counterfeit', 'Revalidation', 'Exprired', 'Invalid', 'Retry', 'OverCert', 'DifferentQR', 'CommonQR', 'NotiOverCert'), nullable=False)
     resultDetail = db.Column(INTEGER(4), default=0)
     osType = db.Column(ENUM('iOS', 'Android', 'Unknown', 'Web'), nullable=False)
     dtCertificate = db.Column(DATETIME, nullable=False)
@@ -318,7 +382,7 @@ class Report(db.Model):
     deviceID = db.Column(VARCHAR(50), db.ForeignKey('td_device.pushToken'), nullable=False, index=True)
     companyCode = db.Column(CHAR(10), db.ForeignKey('td_company.code'), default='NULL', index=True)
     tagCode = db.Column(CHAR(10), default='NULL', index=True)
-    hVersion = db.Column(CHAR(11), db.ForeignKey('td_tag_vesion.version'), default='NULL, index=True')
+    hVersion = db.Column(CHAR(11), db.ForeignKey('td_tag_version.version'), default='NULL', index=True)
     image = db.Column(TEXT, nullable=False)
     imageProduct = db.Column(TEXT, default='NULL')
     latitude = db.Column(VARCHAR(45), default='NULL')
@@ -351,38 +415,7 @@ class Report(db.Model):
     resultDetail = db.Column(INTEGER(4), nullable=False, default=0)
     data = db.Column(VARCHAR(64), default='NULL')
 
-class Loginlog(db.Model):
-    __tablename__ = 'tl_login'
-    idx = db.Column(BIGINT(20), primary_key=True, nullable=False, autoincrement=True)
-    id = db.Column(VARCHAR(20), nullable=False)
-    resultCode = db.Column(CHAR(4), nullable=False)
-    dtAttempted = db.Column(DATETIME, nullable=False)
-    remoteAddr = db.Column(VARCHAR(23), nullable=False)
 
-class Blacklist(db.Model):
-    __tablename__ = 'td_black_list'
-    idx = db.Column(INTEGER(11), nullable=False, autoincrement=True, index=True)
-    pushToken = db.Column(VARCHAR(50), primary_key=True, nullable=False)
-    blType = db.Column(ENUM('C', 'O'), nullable=False, default='C')
-    delYN = db.Column(VARCHAR(1), nullable=False, default='N')
-    dtRegistered = db.Column(DATETIME, nullable=False)
-    registrant = db.Column(VARCHAR(50), nullable=False, default='CURRENT_TIMESTAMP')
-    dtModified = db.Column(DATETIME, nullable=False, default='CURRENT_TIMESTAMP')
-    modifier = db.Column(VARCHAR(50), nullable=False)
-
-
-class ActiveUniqueCount(db.Model):
-    __tablename__ = 'ts_active_unique_count'
-    idx = db.Column(INTEGER(11), primary_key=True, nullable=False, autoincrement=True)
-    companyCode = db.Column(VARCHAR(10), default='NULL', index=True)
-    appTagType = db.Column(CHAR(1), nullable=False, default='H')
-    osType = db.Column(ENUM('iOS', 'Android', 'Unknown'), nullable=False, index=True)
-    date = db.Column(CHAR(8), nullable=False, index=True)
-    active_count = db.Column(INTEGER(11), nullable=False, default=0)
-    unique_count = db.Column(INTEGER(11), nullable=False, default=0)
-    cert_unique_count = db.Column(INTEGER(11), nullable=False, default=0)
-    regApp_count = db.Column(INTEGER(11), default='N')
-    registerDt = db.Column(DATETIME, default='CURRENT_TIMESTAMP')
 
 class AppdownDaily(db.Model):
     __tablename__ = 'ts_appdown_daily'
@@ -393,18 +426,6 @@ class AppdownDaily(db.Model):
     tagType = db.Column(ENUM('HOLOTAG_ONLY', 'HOLOTAG_BARCODE', 'HYBRIDTAG'), default='NULL')
     downloadCount = db.Column(INTEGER(11), nullable=False, default=0)
 
-
-class CertReportCount(db.Model):
-    __tablename__ = 'ts_cert_report_count'
-    idx = db.Column(INTEGER(11), primary_key=True, nullable=False, autoincrement=True)
-    companyCode = db.Column(VARCHAR(10), default='NULL', index=True)
-    tagType = db.Column(ENUM('HOLOTAG_ONLY', 'HOLOTAG_BARCODE', 'HYBRIDTAG', 'RANDOMTAG', 'SQRTAG'), default='NULL')
-    tagCode = db.Column(VARCHAR(10), default='NULL', index=True)
-    osType = db.Column(ENUM('iOS', 'Android', 'Unknown'), nullable=False, index=True)
-    type = db.Column(VARCHAR(30), nullable=False, index=True)
-    date = db.Column(CHAR(8), nullable=False, index=True)
-    count = db.Column(INTEGER(11), default=0, nullable=False)
-    registerDt = db.Column(DATETIME, default='NULL')
 
 
 class Retailer(db.Model):
@@ -422,3 +443,20 @@ class Retailer(db.Model):
     dtRegistered = db.Column(DATETIME, nullable=False, default='CURRENT_TIMESTAMP')
     modifier = db.Column(VARCHAR(20), default='NULL')
     dtModified = db.Column(DATETIME, default='NULL')
+
+
+class Banner(db.Model):
+    __tablename__ = 'td_banner'
+    idx = db.Column(INTEGER(10), primary_key=True, nullable=False, autoincrement=True)
+    bannerID = db.Column(CHAR(10), nullable=False)
+    bannerName = db.Column(VARCHAR(128), nullable=False)
+    sizeType = db.Column(ENUM('DEFAULT', 'WXGA'), nullable=False)
+    imageUrl = db.Column(VARCHAR(256), nullable=False)
+    linkUrl = db.Column(VARCHAR(512), nullable=False)
+    interval = db.Column(INTEGER(6), nullable=False)
+    dtStart = db.Column(DATETIME, nullable=False)
+    dtEnd = db.Column(DATETIME, nullable=False)
+    registrant = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), nullable=False)
+    dtRegistered = db.Column(DATETIME, nullable=False)
+    modifier = db.Column(VARCHAR(20), db.ForeignKey('td_admin.id'), nullable=False)
+    dtModified  = db.Column(DATETIME, nullable=False)
