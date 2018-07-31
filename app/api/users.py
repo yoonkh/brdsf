@@ -51,3 +51,9 @@
 #         'next': next,
 #         'count': pagination.total
 #     })
+
+
+@api.route('/users/')
+def get_users(id):
+    user = User.query.get_or_404(id)
+    return jsonify(user.to_json())
