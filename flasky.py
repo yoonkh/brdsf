@@ -1,6 +1,6 @@
 from flask_migrate import Migrate
 from app import create_app, db
-from app.models import CustomerAccount, CustomerCompany, ICraftAccount, Role
+from app.models import CustomerAccount, CustomerCompany, Role
 
 app = create_app()
 migrate = Migrate(app, db)
