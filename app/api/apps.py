@@ -1,19 +1,19 @@
 from flask import jsonify
-
+from ..models import *
 from app import db
 from . import api
 
 
 # query.page
-@api.route('/apps/')
+@api.route('/apps/', methods=['GET'])
 def all_apps():
-    apps = App.query.all()
+    apps = TdApp.query.all()
     return jsonify({
         'apps': [app.to_json() for app in apps]
     })
 
 
-@api.route('/apps/', method=['POST'])
+@api.route('/apps/', methods=['POST'])
 def register_app():
     json_data = request.get_json()
     app = App(code=json_data['code'],
@@ -44,7 +44,7 @@ def get_app(id):
     return jsonify(app.to_json())
 
 
-@api.route('/apps/<int:id>', method=['PUT'])
+@api.route('/apps/<int:id>', methods=['PUT'])
 def update_app(id):
     app = App.query.get_or_404(id)
     app.update_app()
@@ -52,7 +52,7 @@ def update_app(id):
     return jsonify(app.to_json())
 
 
-@api.route('/apps/<int:id>', method=['DELETE'])
+@api.route('/apps/<int:id>', methods=['DELETE'])
 def delete_app(id):
     app = App.query.get_or_404(id)
     db.session.delete(app)

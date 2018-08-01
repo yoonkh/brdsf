@@ -1,18 +1,19 @@
-from flask import jsonify, request
-
+from flask import jsonify
+import json
 from app import db
 from . import api
-
+from ..models import *
+from .helper import *
 
 @api.route('/admin/customer/')
 def all_customers():
-    customers = Customer.query.all()
+    customers = TdAccount.query.all()
     return jsonify({
         'apps': [customer.to_json() for customer in customers]
     })
 
 
-@api.route('/admin/customer/', method=['POST'])
+@api.route('/admin/customer/', methods=['POST'])
 def register_customer():
     json_data = request.get_json()
     customer = Customercompany(code=json_data['code'],
@@ -44,7 +45,7 @@ def register_customer():
     return jsonify({'result': 'success'})
 
 
-@api.route('/admin/customer/<int:id>', method=['PUT'])
+@api.route('/admin/customer/<int:id>', methods=['PUT'])
 def update_customer(id):
     customer = Customer.query.get_or_404(id)
     customer.update_app()
@@ -54,13 +55,13 @@ def update_customer(id):
 
 @api.route('/admin/icrf-users/')
 def all_icrf_users():
-    icrfs = Icrf.query.all()
+    icrfs = TdAdmin.query.all()
     return jsonify({
         'apps': [icrf.to_json() for icrf in icrfs]
     })
 
 
-@api.route('/admin/icrf-users/', method=['POST'])
+@api.route('/admin/icrf-users/', methods=['POST'])
 def register_icrf_user():
     json_data = request.get_json()
     icrf = ICraftaccount(id=json_data['id'],
@@ -87,7 +88,7 @@ def get_icrf_user(id):
     return jsonify(icrf.to_json())
 
 
-@api.route('/admin/icrf-users/<int:id>', method=['PUT'])
+@api.route('/admin/icrf-users/<int:id>', methods=['PUT'])
 def update_icrf_user(id):
     icrf = Icrf.query.get_or_404(id)
     icrf.update_icrf()
@@ -95,7 +96,7 @@ def update_icrf_user(id):
     return jsonify(icrf.to_json())
 
 
-@api.route('/admin/icrf-users/<int:id>', method=['DELETE'])
+@api.route('/admin/icrf-users/<int:id>', methods=['DELETE'])
 def delete_icrf_user(id):
     icrf = Icrf.query.get_or_404(id)
     db.session.delete(icrf)
@@ -106,28 +107,34 @@ def delete_icrf_user(id):
 # access.query.page 추가해야함
 @api.route('/admin/access/')
 def get_user_access():
-    user_access = Login.query.all()
+    # start, end = log_date_range()
+    user_access = TlLogin.query.limit(100)
+    #filter(TlLogin.dtAttempted.between(start, end)).order_by(TlLogin.dtAttempted.desc()).all()
+    return  jsonify({
+        'apps': [access.to_json() for access in user_access]
+    })
 
-    try:
-        search_query = json_data['search']
-        searched_user_id = User.query.filter(User.id.like('%' + search_query + '%')).all()
-        searched_user_name = User.query.filter(User.name.like('%' + search_query + '%')).all()
-
-        result_dict = {"user_info": []}
-
-        if searched_user_id is not None:
-            for user in searched_user_id:
-                result_dict["user_info"].append(user.to_json())
-
-        if searched_user_name is not None:
-            for user in searched_user_name:
-                result_dict["user_info"].append(user.to_json())
-
-        return jsonify(result_dict)
-
-    except Exception as e:
-        print(e)
-        return '<h1>Request에 포함된 데이터가 양식과 맞지 않거나 내부 서버 에러입니다.</h1>'
+    #
+    # try:
+    #     search_query = json_data['search']
+    #     searched_user_id = TlLogin.query.filter(TlLogin.id.like('%' + search_query + '%')).all()
+    #     searched_user_name = TlLogin.query.filter(TlLogin.name.like('%' + search_query + '%')).all()
+    #
+    #     result_dict = {"user_info": []}
+    #
+    #     if searched_user_id is not None:
+    #         for user in searched_user_id:
+    #             result_dict["user_info"].append(user.to_json())
+    #
+    #     if searched_user_name is not None:
+    #         for user in searched_user_name:
+    #             result_dict["user_info"].append(user.to_json())
+    #
+    #     return jsonify(result_dict)
+    #
+    # except Exception as e:
+    #     print(e)
+    #     return '<h1>Request에 포함된 데이터가 양식과 맞지 않거나 내부 서버 에러입니다.</h1>'
 
 
 # query.page
@@ -139,7 +146,7 @@ def all_blacklists():
     })
 
 
-@api.route('/admin/blacklist/', method=['POST'])
+@api.route('/admin/blacklist/', methods=['POST'])
 def register_blacklist():
     json_data = request.get_json()
     blacklist = Blacklist(email=json_data['email'],
@@ -147,10 +154,10 @@ def register_blacklist():
                           name=json_data['name'])
     db.session.add(blacklist)
     db.session.commit()
-    return jsonify({'result': 'success'})
+    return jsonify({'result': 'success'})git
 
 
-@api.route('/admin/blacklist/<int:id>', method=['DELETE'])
+@api.route('/admin/blacklist/<int:id>', methods=['DELETE'])
 def update_blacklist(id):
     blacklist = Blacklist.query.get_or_404(id)
     db.sesion.delete(blacklist)
@@ -176,7 +183,7 @@ def all_randnums():
     })
 
 
-@api.route('/admin/randnum/', method=['POST'])
+@api.route('/admin/randnum/', methods=['POST'])
 def register_randnum():
     json_data = request.get_json()
     randnum = Randnum(email=json_data['email'],
@@ -187,7 +194,7 @@ def register_randnum():
     return jsonify({'result': 'success'})
 
 
-@api.route('/admin/randnum/<int:id>', method=['PUT'])
+@api.route('/admin/randnum/<int:id>', methods=['PUT'])
 def update_randnum(id):
     randnum = Randnum.query.get_or_404(id)
     randnum.update_randnum()
@@ -203,7 +210,7 @@ def all_admin_apps():
     })
 
 
-@api.route('/admin/app/', method=['POST'])
+@api.route('/admin/app/', methods=['POST'])
 def register_admin_app():
     json_data = request.get_json()
     app = App(email=json_data['email'],
@@ -214,7 +221,7 @@ def register_admin_app():
     return jsonify({'result': 'success'})
 
 
-@api.route('/admin/app/<int:id>', method=['PUT'])
+@api.route('/admin/app/<int:id>', methods=['PUT'])
 def update_admin_app(id):
     app = App.query.get_or_404(id)
     app.update_app()
@@ -230,7 +237,7 @@ def all_distributors():
     })
 
 
-@api.route('/admin/distributor/', method=['POST'])
+@api.route('/admin/distributor/', methods=['POST'])
 def register_distributor():
     json_data = request.get_json()
     distributor = Distributor(email=json_data['email'],
@@ -241,7 +248,7 @@ def register_distributor():
     return jsonify({'result': 'success'})
 
 
-@api.route('/admin/distributor/<int:id>', method=['PUT'])
+@api.route('/admin/distributor/<int:id>', methods=['PUT'])
 def update_distributor(id):
     distributor = Distributor.query.get_or_404(id)
     distributor.update_distributor()
@@ -249,7 +256,7 @@ def update_distributor(id):
     return jsonify(distributor.to_json())
 
 
-@api.route('/admin/distributor/<int:id>', method=['DELETE'])
+@api.route('/admin/distributor/<int:id>', methods=['DELETE'])
 def delete_distributor(id):
     distributor = Distributor.query.get_or_404(id)
     db.session.delete(distributor)
@@ -265,7 +272,7 @@ def all_tag_types():
     })
 
 
-@api.route('/admin/tag-type/', method=['POST'])
+@api.route('/admin/tag-type/', methods=['POST'])
 def register_tag_type():
     json_data = request.get_json()
     tag_type = Tagtype(email=json_data['email'],
@@ -276,7 +283,7 @@ def register_tag_type():
     return jsonify({'result': 'success'})
 
 
-@api.route('/admin/tag-type/<int:id>', method=['PUT'])
+@api.route('/admin/tag-type/<int:id>', methods=['PUT'])
 def update_tag_type(id):
     tag_type = Tagtype.query.get_or_404(id)
     tag_type.update_distributor()
@@ -284,7 +291,7 @@ def update_tag_type(id):
     return jsonify(tag_type.to_json())
 
 
-@api.route('/admin/tag-type/<int:id>', method=['DELETE'])
+@api.route('/admin/tag-type/<int:id>', methods=['DELETE'])
 def delete_tag_type(id):
     tag_type = Tagtype.query.get_or_404(id)
     db.session.delete(tag_type)

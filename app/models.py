@@ -69,6 +69,7 @@ class TdAccount(db.Model):
             'idx': self.idx,
             'id': self.id,
             'pwd': self.pwd,
+            'email': self.email,
             'name_kr': self.name_kr,
             'name_en': self.name_en,
             'name_zh': self.name_zh,
@@ -113,6 +114,29 @@ class TdAdmin(db.Model):
     note = db.Column(db.Text)
     failCount = db.Column(db.SmallInteger, server_default=db.FetchedValue())
 
+    def to_json(self):
+        json_user = {
+            'idx': self.idx,
+            'id': self.id,
+            'pwd': self.pwd,
+            'email': self.email,
+            'name': self.name,
+            'phone': self.phone,
+            'telephone': self.telephone,
+            'role': self.role,
+            'position': self.position,
+            'department': self.department,
+            'state': self.state,
+            'registrant': self.registrant,
+            'dtRegistered': self.dtRegistered,
+            'modifier': self.modifier,
+            'dtModified': self.dtModified,
+            'dtLastConnected': self.dtLastConnected,
+            'note': self.note,
+            'failCount': self.failCount
+        }
+        return json_user
+
 
 class TdApp(db.Model):
     __tablename__ = 'td_app'
@@ -143,6 +167,35 @@ class TdApp(db.Model):
     td_company = db.relationship('TdCompany', primaryjoin='TdApp.companyCode == TdCompany.code', backref='td_apps')
     td_admin = db.relationship('TdAdmin', primaryjoin='TdApp.modifier == TdAdmin.id', backref='tdadmin_td_apps')
     td_admin1 = db.relationship('TdAdmin', primaryjoin='TdApp.registrant == TdAdmin.id', backref='tdadmin_td_apps_0')
+
+
+    def to_json(self):
+        json_apps = {
+            'idx': self.idx,
+            'code': self.code,
+            'name_kr': self.name_kr,
+            'name_en': self.name_en,
+            'name_zh': self.name_zh,
+            'version': self.version,
+            'type': self.type,
+            'tagType': self.tagType,
+            'companyCode': self.companyCode,
+            'registrant': self.registrant,
+            'dtRegistered': self.dtRegistered,
+            'modifier': self.modifier,
+            'dtModified': self.dtModified,
+            'note': self.note,
+            'dtPublished': self.dtPublished,
+            'attachedPath': self.attachedPath,
+            'osType': self.osType,
+            'state': self.state,
+            'description': self.description,
+            'limitCertHour': self.limitCertHour,
+            'limitCertCnt': self.limitCertCnt,
+            'updateUrl': self.updateUrl
+
+        }
+        return json_apps
 
 
 class TdBanner(db.Model):
@@ -461,6 +514,17 @@ class TlLogin(db.Model):
     resultCode = db.Column(db.String(4), nullable=False)
     dtAttempted = db.Column(db.DateTime, nullable=False)
     remoteAddr = db.Column(db.String(23), nullable=False)
+
+    def to_json(self):
+        json_apps = {
+            'idx': self.idx,
+            'id': self.id,
+            'resultCode': self.resultCode,
+            'dtAttempted': self.dtAttempted,
+            'remoteAddr': self.remoteAddr,
+        }
+        return json_apps
+
 
 
 class TsActiveUniqueCount(db.Model):
