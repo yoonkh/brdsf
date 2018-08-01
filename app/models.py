@@ -3,7 +3,13 @@ from sqlalchemy import BigInteger, Column, DateTime, Enum, ForeignKey, Index, In
 from sqlalchemy.schema import FetchedValue
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
+<<<<<<< HEAD
 from . import db
+=======
+
+
+db = SQLAlchemy()
+>>>>>>> c3b676e3274030cb8f6e2169506204b6e2d24b2d
 
 
 class TcResult(db.Model):
@@ -35,6 +41,7 @@ class TcRole(db.Model):
     isIcraft = db.Column(db.Integer, nullable=False, server_default=db.FetchedValue())
 
 
+<<<<<<< HEAD
 class TdAccount(db.Model):
     __tablename__ = 'td_account'
 
@@ -90,6 +97,8 @@ class TdAccount(db.Model):
         }
         return json_user
 
+=======
+>>>>>>> c3b676e3274030cb8f6e2169506204b6e2d24b2d
 class TdAdmin(db.Model):
     __tablename__ = 'td_admin'
 
@@ -165,6 +174,7 @@ class TdBanner(db.Model):
     td_admin1 = db.relationship('TdAdmin', primaryjoin='TdBanner.registrant == TdAdmin.id', backref='tdadmin_td_banners_0')
 
 
+<<<<<<< HEAD
 class TdBlackList(db.Model):
     __tablename__ = 'td_black_list'
 
@@ -178,6 +188,8 @@ class TdBlackList(db.Model):
     modifier = db.Column(db.String(50), nullable=False)
 
 
+=======
+>>>>>>> c3b676e3274030cb8f6e2169506204b6e2d24b2d
 class TdCompany(db.Model):
     __tablename__ = 'td_company'
 
@@ -507,4 +519,8 @@ class TsCertReportCount(db.Model):
     type = db.Column(db.String(30), nullable=False)
     date = db.Column(db.String(8), nullable=False)
     count = db.Column(db.Integer, nullable=False, server_default=db.FetchedValue())
+<<<<<<< HEAD
     registerDt = db.Column(db.DateTime)
+=======
+    registerDt = db.Column(db.DateTime)
+>>>>>>> c3b676e3274030cb8f6e2169506204b6e2d24b2d

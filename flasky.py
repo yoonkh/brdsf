@@ -9,7 +9,11 @@ migrate = Migrate(app, db)
 # @app.shell_context_processor
 # def make_shell_context():
 #     return dict(db=db, CustomerCompany=CustomerCompany, CustomerAccount=CustomerAccount, Role=Role)
+<<<<<<< HEAD
 #
+=======
+
+>>>>>>> c3b676e3274030cb8f6e2169506204b6e2d24b2d
 
 
 # @app.cli.command()

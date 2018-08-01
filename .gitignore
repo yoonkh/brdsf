@@ -1,2 +1,7 @@
+<<<<<<< HEAD
 venv/
 .idea/
+=======
+venv
+.idea
+>>>>>>> c3b676e3274030cb8f6e2169506204b6e2d24b2d
