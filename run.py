@@ -6,6 +6,10 @@ application = create_app()
 app = application
 migrate = Migrate(app, db)
 
+@app.route('/')
+def index():
+    return "<h1>Welcome to API</h1>"
+
 @app.shell_context_processor
 def make_shell_context():
     return dict(db=db, TcResult=TcResult, TcRole=TcResult, TdAccount= TdAccount, TdAdmin=TdAdmin,

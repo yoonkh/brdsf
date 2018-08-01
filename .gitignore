@@ -186,5 +186,4 @@ venv.bak/
 ### Python Patch ###
 .venv/
 
-
-# End of https://www.gitignore.io/api/git,python,pycharm
+*.zip
