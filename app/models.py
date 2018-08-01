@@ -64,6 +64,13 @@ class TdAccount(db.Model):
     td_company = db.relationship('TdCompany', primaryjoin='TdAccount.companyCode == TdCompany.code', backref='td_accounts')
     tc_role = db.relationship('TcRole', primaryjoin='TdAccount.role == TcRole.code', backref='td_accounts')
 
+
+    def change_role(self, role_str):
+        role = TcRole.query.filter_by(name_kr_forAccount=role_str).first()
+        self.role = role
+        db.session.add(self)
+
+
     def to_json(self):
         json_user = {
             'idx': self.idx,
@@ -143,6 +150,79 @@ class TdApp(db.Model):
     td_company = db.relationship('TdCompany', primaryjoin='TdApp.companyCode == TdCompany.code', backref='td_apps')
     td_admin = db.relationship('TdAdmin', primaryjoin='TdApp.modifier == TdAdmin.id', backref='tdadmin_td_apps')
     td_admin1 = db.relationship('TdAdmin', primaryjoin='TdApp.registrant == TdAdmin.id', backref='tdadmin_td_apps_0')
+
+
+    @staticmethod
+    def insert_comany():
+        sectors = ['아이크래프트', 'CJ', '블랙야크', '시엔스']
+
+        for s in sectors:
+            sector = TdApp.query.filter_by(companyCode=s).first()
+            if sector is None:
+                sector = TdApp(companyCode=s)
+                db.session.add(sector)
+        db.session.commit()
+
+    @staticmethod
+    def insert_tagtype():
+        sectors = ['홀로태그', '하이브리드태그', '난수태그', 'SQR태그']
+
+        for s in sectors:
+            sector = TdApp.query.filter_by(tagType=s).first()
+            if sector is None:
+                sector = TdApp(tagType=s)
+                db.session.add(sector)
+        db.session.commit()
+
+    @staticmethod
+    def insert_os():
+        sectors = ['iOS', '안드로이드']
+
+        for s in sectors:
+            sector = TdApp.query.filter_by(osType=s).first()
+            if sector is None:
+                sector = TdApp(osType=s)
+                db.session.add(sector)
+        db.session.commit()
+
+    @staticmethod
+    def insert_apptype():
+        sectors = ['APP', 'LIB']
+
+        for s in sectors:
+            sector = TdApp.query.filter_by(type=s).first()
+            if sector is None:
+                sector = TdApp(type=s)
+                db.session.add(sector)
+        db.session.commit()
+
+    def app_code_generator(self):
+        pass
+
+    def to_json(self):
+        json_app = {
+            'idx': self.idx,
+            'code': self.code,
+            'name_kr': self.name_kr,
+            'name_en': self.name_en,
+            'name_zh': self.name_zh,
+            'version': self.version,
+            'type': self.type,
+            'tagType': self.tagType,
+            'companyCode': self.companyCode,
+            'description': self.description,
+            'dtpublished': self.dtPublished,
+            'registrant': self.registrant,
+            'dtRegistered': self.dtRegistered,
+            'modifier': self.modifier,
+            'dtModified': self.dtModified,
+            'note': self.note,
+            'limitCertHour': self.limitCertHour,
+            'limitCertCnt': self.limitCertCnt,
+            'osType': self.osType,
+            'updateUrl': self.updateUrl
+        }
+        return json_app
 
 
 class TdBanner(db.Model):
@@ -386,6 +466,31 @@ class ThCertification(db.Model):
 
     td_company = db.relationship('TdCompany', primaryjoin='ThCertification.companyCode == TdCompany.code', backref='th_certifications')
     td_tag_version = db.relationship('TdTagVersion', primaryjoin='ThCertification.hVersion == TdTagVersion.version', backref='th_certifications')
+
+    def to_json(self):
+        json_cert = {
+            'idx': self.idx,
+            'deviceID': self.deviceID,
+            'companyCode': self.companyCode,
+            'tagType': self.tagType,
+            'tagCode': self.tagCode,
+            'hVersion': self.hVersion,
+            'mappingCode': self.mappingCode,
+            'image': self.image,
+            'result': self.result,
+            'resultDetail': self.resultDetail,
+            'osType': self.osType,
+            'dtCertificate': self.dtCertificate,
+            'longitude': self.longitude,
+            'latitude': self.latitude,
+            'regionIdx': self.regionIdx,
+            'random': self.random,
+            'randomCnt': self.randomCnt,
+            'retailerID': self.retailerID,
+            'mode': self.mode,
+            'data': self.data
+        }
+        return json_cert
 
 
 class ThReport(db.Model):
