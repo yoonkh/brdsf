@@ -162,7 +162,7 @@ celerybeat-schedule
 *.sage.py
 
 # Environments
-.env
+
 .venv
 env/
 venv/
@@ -186,5 +186,8 @@ venv.bak/
 ### Python Patch ###
 .venv/
 
-
-# End of https://www.gitignore.io/api/git,python,pycharm
+*.zip
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

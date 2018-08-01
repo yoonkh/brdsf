@@ -2,8 +2,13 @@ from flask_migrate import Migrate
 from app import create_app, db
 from app.models import *
 
-app = create_app()
+application = create_app()
+app = application
 migrate = Migrate(app, db)
+
+@app.route('/')
+def index():
+    return "<h1>Welcome to API</h1>"
 
 @app.shell_context_processor
 def make_shell_context():
