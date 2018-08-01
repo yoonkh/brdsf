@@ -1,59 +1,77 @@
-# from flask import jsonify, request, current_app, url_for
-# from . import api
-# from ..models import User, Post
-#
-#
-# @api.route('/users/<int:id>')
-# def get_user(id):
-#     user = User.query.get_or_404(id)
-#     return jsonify(user.to_json())
-#
-#
-# @api.route('/users/<int:id>/posts/')
-# def get_user_posts(id):
-#     user = User.query.get_or_404(id)
-#     page = request.args.get('page', 1, type=int)
-#     pagination = user.posts.order_by(Post.timestamp.desc()).paginate(
-#         page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
-#         error_out=False)
-#     posts = pagination.items
-#     prev = None
-#     if pagination.has_prev:
-#         prev = url_for('api.get_user_posts', id=id, page=page-1)
-#     next = None
-#     if pagination.has_next:
-#         next = url_for('api.get_user_posts', id=id, page=page+1)
-#     return jsonify({
-#         'posts': [post.to_json() for post in posts],
-#         'prev': prev,
-#         'next': next,
-#         'count': pagination.total
-#     })
-#
-#
-# @api.route('/users/<int:id>/timeline/')
-# def get_user_followed_posts(id):
-#     user = User.query.get_or_404(id)
-#     page = request.args.get('page', 1, type=int)
-#     pagination = user.followed_posts.order_by(Post.timestamp.desc()).paginate(
-#         page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
-#         error_out=False)
-#     posts = pagination.items
-#     prev = None
-#     if pagination.has_prev:
-#         prev = url_for('api.get_user_followed_posts', id=id, page=page-1)
-#     next = None
-#     if pagination.has_next:
-#         next = url_for('api.get_user_followed_posts', id=id, page=page+1)
-#     return jsonify({
-#         'posts': [post.to_json() for post in posts],
-#         'prev': prev,
-#         'next': next,
-#         'count': pagination.total
-#     })
+from flask import jsonify, request, current_app, url_for
+
+from app import db
+from . import api
+from ..models import TdAccount
 
 
 @api.route('/users/')
-def get_users(id):
-    user = User.query.get_or_404(id)
+def all_users():
+    users = TdAccount.query.all()
+    return jsonify({
+        'users': [user.to_json() for user in users]
+    })
+
+
+@api.route('/users/', method=['POST'])
+def register_user():
+    json_data = request.get_json()
+    user = TdAccount(id=json_data['id'],
+                     email=json_data['email'],
+                     password_hash=json_data['password'],
+                     name_kr=json_data['name_kr'],
+                     name_en=json_data['name_en'],
+                     name_ch=json_data['name_ch'],
+                     phone=json_data['phone'],
+                     telephone=json_data['telephone'],
+                     fax=json_data['fax'],
+                     position=json_data['position'],
+                     department=json_data['department'],
+                     state=json_data['state'],
+                     registrant=json_data['registrant'],
+                     dtRegistered=json_data['dtregistered'],
+                     dtModified=json_data['dtmodified'],
+                     dtLastConnected=json_data['dtLastConnected'],
+                     note=json_data['note'])
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({'result': 'success'})
+
+
+@api.route('/users/<int:id>')
+def get_user(id):
+    user = TdAccount.query.get_or_404(id)
     return jsonify(user.to_json())
+
+
+@api.route('/users/<int:id>', method=['PUT'])
+def update_user(id):
+    user = TdAccount.query.get_or_404(id)
+    user.update_user()
+    db.session.commit()
+    return jsonify(user.to_json())
+
+
+@api.route('/users/<int:id>', method=['DELETE'])
+def delete_user(id):
+    user = TdAccount.query.get_or_404(id)
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({'result': 'success'})
+
+
+@api.route('/users/<int:id>/pw-reset', methods=['PUT'])
+def reset_password(id):
+    user = TdAccount.query.get_or_404(id)
+    password = user.reset_password()
+    db.session.commit()
+    return jsonify({'result': 'success', 'password': password})
+
+
+@api.route('/users/<int:id>/change-role/', method=['PUT'])
+def change_role(id):
+    user = TdAccount.query.get_or_404(id)
+    role = request.args.get('role', user.role.name)
+    user.change_role(role)
+    db.session.commit()
+    return jsonify({'result': 'success'})

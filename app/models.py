@@ -64,6 +64,31 @@ class TdAccount(db.Model):
     td_company = db.relationship('TdCompany', primaryjoin='TdAccount.companyCode == TdCompany.code', backref='td_accounts')
     tc_role = db.relationship('TcRole', primaryjoin='TdAccount.role == TcRole.code', backref='td_accounts')
 
+    def to_json(self):
+        json_user = {
+            'idx': self.idx,
+            'id': self.id,
+            'pwd': self.pwd,
+            'name_kr': self.name_kr,
+            'name_en': self.name_en,
+            'name_zh': self.name_zh,
+            'phone': self.phone,
+            'telephone': self.telephone,
+            'fax': self.fax,
+            'companyCode': self.companyCode,
+            'role': self.role,
+            'position': self.position,
+            'department': self.department,
+            'state': self.state,
+            'registrant': self.registrant,
+            'dtRegistered': self.dtRegistered,
+            'modifier': self.modifier,
+            'dtModified': self.dtModified,
+            'dtLastConnected': self.dtLastConnected,
+            'note': self.note,
+            'failCount': self.failCount
+        }
+        return json_user
 
 class TdAdmin(db.Model):
     __tablename__ = 'td_admin'
