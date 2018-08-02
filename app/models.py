@@ -333,6 +333,39 @@ class TdCompany(db.Model):
     td_admin1 = db.relationship('TdAdmin', primaryjoin='TdCompany.registrant == TdAdmin.id', backref='tdadmin_td_companies_0')
 
 
+    def to_json(self):
+        json_company = {
+            'idx': self.idx,
+            'code': self.code,
+            'name_kr': self.name_kr,
+            'name_en': self.name_en,
+            'name_zh': self.name_zh,
+            'registrationNumber': self.registrationNumber,
+            'businessRegistrationUrl': self.businessRegistrationUrl,
+            'addr_kr': self.addr_kr,
+            'addr_en': self.addr_en,
+            'addr_zh': self.addr_zh,
+            'telephone': self.telephone,
+            'fax': self.fax,
+            'delegator_kr': self.delegator_kr,
+            'delegator_en': self.delegator_en,
+            'delegator_zh': self.delegator_zh,
+            'state': self.state,
+            'registrant': self.registrant,
+            'dtRegistered': self.dtRegistered,
+            'modifier': self.modifier,
+            'dtModified': self.dtModified,
+            'note': self.note,
+            'ci': self.ci,
+            'url': self.url,
+            'description_kr': self.description_kr,
+            'description_en': self.description_en,
+            'description_zh': self.description_zh,
+            'tntLogoImgUrl': self.tntLogoImgUrl
+        }
+        return json_company
+
+
 class TdDevice(db.Model):
     __tablename__ = 'td_device'
 
@@ -760,7 +793,7 @@ class TdRandomMnge(db.Model):
 
 
     def to_json(self):
-        json_cert_report = {
+        json_random_mnge = {
             'idx': self.idx,
             'companyCode': self.companyCode,
             'tagCode': self.tagCode,
@@ -781,7 +814,7 @@ class TdRandomMnge(db.Model):
             'dtShipping': self.dtShipping,
             'modifier': self.modifier,
         }
-        return json_cert_report
+        return json_random_mnge
 
 
 class TdAdminApp(db.Model):
@@ -799,7 +832,7 @@ class TdAdminApp(db.Model):
 
 
     def to_json(self):
-        json_cert_report = {
+        json_admin_app = {
             'idx': self.idx,
             'pushToken': self.pushToken,
             'companyName': self.companyName,
@@ -810,4 +843,4 @@ class TdAdminApp(db.Model):
             'dtModified': self.dtModified,
             'modifier': self.modifier
         }
-        return json_cert_report
+        return json_admin_app

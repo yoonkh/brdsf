@@ -10,7 +10,7 @@ from .helper import *
 
 @api.route('/admin/customer/')
 def all_customers():
-    customers = TdAccount.query.all()
+    customers = TdCompany.query.all()
     return jsonify({
         'apps': [customer.to_json() for customer in customers]
     })
@@ -19,7 +19,7 @@ def all_customers():
 @api.route('/admin/customer/', methods=['POST'])
 def register_customer():
     json_data = request.get_json()
-    customer = Customercompany(code=json_data['code'],
+    customer = TdCompany(code=json_data['code'],
                                name_kr=json_data['name_kr'],
                                name_en=json_data['name_en'],
                                name_zh=json_data['name_zh'],
@@ -50,7 +50,7 @@ def register_customer():
 
 @api.route('/admin/customer/<int:id>', methods=['PUT'])
 def update_customer(id):
-    customer = Customer.query.get_or_404(id)
+    customer = TdCompany.query.get_or_404(id)
     customer.update_app()
     db.session.commit()
     return jsonify(customer.to_json())
