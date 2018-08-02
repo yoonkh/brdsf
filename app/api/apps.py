@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, request
 
 from app import db
 from app.models import TdApp
@@ -16,25 +16,27 @@ def all_apps():
 
 @api.route('/apps/', methods=['POST'])
 def register_app():
-    json_data = TdApp.get_json()
+    json_data = request.get_json()
 
-    app = TdApp(code=json_data['code'],
+    app = TdApp(companyCode=json_data['companyCode'],
+                registrant=json_data['registrant'],
                 name_kr=json_data['name_kr'],
                 name_en=json_data['name_en'],
                 name_zh=json_data['name_zh'],
                 version=json_data['version'],
                 type=json_data['type'],
-                tagType=json_data['tagtype'],
-                dtRegistered=json_data['dtregistered'],
+                tagType=json_data['tagType'],
+                dtRegistered=json_data['dtRegistered'],
                 note=json_data['note'],
-                dtPublished=json_data['dtpublished'],
-                attachedPath=json_data['attachedpath'],
-                osType=json_data['ostype'],
+                dtPublished=json_data['dtPublished'],
+                attachedPath=json_data['attachedPath'],
+                osType=json_data['osType'],
                 modifier=json_data['modifier'],
+                dtModified=json_data['dtModified'],
                 description=json_data['description'],
-                limitCertHour=json_data['limitcerthour'],
-                limitCertCnt=json_data['limitcertcnt'],
-                updateUrl=json_data['updateurl'])
+                limitCertHour=json_data['limitCertHour'],
+                limitCertCnt=json_data['limitCertCnt'],
+                updateUrl=json_data['updateUrl'])
     db.session.add(app)
     db.session.commit()
     return jsonify({'result': 'success'})

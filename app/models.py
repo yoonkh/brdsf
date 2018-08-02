@@ -176,7 +176,7 @@ class TdApp(db.Model):
 
 
     @staticmethod
-    def insert_comany():
+    def insert_company():
         sectors = ['아이크래프트', 'CJ', '블랙야크', '시엔스']
 
         for s in sectors:
@@ -234,7 +234,7 @@ class TdApp(db.Model):
             'tagType': self.tagType,
             'companyCode': self.companyCode,
             'description': self.description,
-            'dtpublished': self.dtPublished,
+            'dtPublished': self.dtPublished,
             'registrant': self.registrant,
             'dtRegistered': self.dtRegistered,
             'modifier': self.modifier,
