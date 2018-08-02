@@ -12,7 +12,7 @@ from .helper import *
 def all_customers():
     customers = TdCompany.query.all()
     return jsonify({
-        'apps': [customer.to_json() for customer in customers]
+        'customers': [customer.to_json() for customer in customers]
     })
 
 
@@ -20,29 +20,31 @@ def all_customers():
 def register_customer():
     json_data = request.get_json()
     customer = TdCompany(code=json_data['code'],
-                               name_kr=json_data['name_kr'],
-                               name_en=json_data['name_en'],
-                               name_zh=json_data['name_zh'],
-                               registrationNumber=json_data['registrationnumber'],
-                               businessRegistrationUrl=json_data['businessregistrationurl'],
-                               addr_kr=json_data['addr_kr'],
-                               addr_en=json_data['addr_en'],
-                               addr_zh=json_data['addr_zh'],
-                               telephone=json_data['telephone'],
-                               fax=json_data['fax'],
-                               delegator_kr=json_data['delegator_kr'],
-                               delegator_en=json_data['delegator_en'],
-                               delegator_zh=json_data['delegator_zh'],
-                               state=json_data['state'],
-                               dtRegisetred=json_data['dtregistered'],
-                               dtmodified=json_data['dtmodified'],
-                               note=json_data['note'],
-                               ci=json_data['ci'],
-                               url=json_data['url'],
-                               description_kr=json_data['description_kr'],
-                               description_en=json_data['description_en'],
-                               description_zh=json_data['desctiption_zh'],
-                               tntLogoImgUrl=json_data['tntlogoimgurl'])
+                         name_kr=json_data['name_kr'],
+                         name_en=json_data['name_en'],
+                         name_zh=json_data['name_zh'],
+                         registrationNumber=json_data['registrationNumber'],
+                         businessRegistrationUrl=json_data['businessRegistrationUrl'],
+                         addr_kr=json_data['addr_kr'],
+                         addr_en=json_data['addr_en'],
+                         addr_zh=json_data['addr_zh'],
+                         telephone=json_data['telephone'],
+                         fax=json_data['fax'],
+                         delegator_kr=json_data['delegator_kr'],
+                         delegator_en=json_data['delegator_en'],
+                         delegator_zh=json_data['delegator_zh'],
+                         state=json_data['state'],
+                         dtRegistered=json_data['dtRegistered'],
+                         dtModified=json_data['dtModified'],
+                         note=json_data['note'],
+                         ci=json_data['ci'],
+                         url=json_data['url'],
+                         description_kr=json_data['description_kr'],
+                         description_en=json_data['description_en'],
+                         description_zh=json_data['description_zh'],
+                         tntLogoImgUrl=json_data['tntLogoImgUrl'],
+                         registrant=json_data['registrant'],
+                         modifier=json_data['modifier'])
     db.session.add(customer)
     db.session.commit()
     return jsonify({'result': 'success'})
@@ -66,19 +68,23 @@ def all_icrf_users():
 @api.route('/admin/icrf-users/', methods=['POST'])
 def register_icrf_user():
     json_data = request.get_json()
-    icrf = TdAdmin(id=json_data['id'],
-                         email=json_data['email'],
-                         password_hash=json_data['password'],
-                         name=json_data['name'],
-                         phone=json_data['phone'],
-                         telephone=json_data['telephone'],
-                         position=json_data['position'],
-                         department=json_data['department'],
-                         state=json_data['state'],
-                         dtRegistered=json_data['dtregistered'],
-                         modifier=json_data['modifier'],
-                         dtModified=json_data['dtmodified'],
-                         note=json_data['note'])
+    icrf = TdAdmin(department=json_data['department'],
+                   dtLastConnected=json_data['dtLastConnected'],
+                   dtModified=json_data['dtModified'],
+                   dtRegistered=json_data['dtRegistered'],
+                   email=json_data['email'],
+                   failCount=json_data['failCount'],
+                   id=json_data['id'],
+                   modifier=json_data['modifier'],
+                   name=json_data['name'],
+                   note=json_data['note'],
+                   phone=json_data['phone'],
+                   position=json_data['position'],
+                   pwd=json_data['pwd'],
+                   registrant=json_data['registrant'],
+                   role=json_data['role'],
+                   state=json_data['state'],
+                   telephone=json_data['telephone'])
     db.session.add(icrf)
     db.session.commit()
     return jsonify({'result': 'success'})
@@ -204,18 +210,49 @@ def get_over_cert():
 # query.page
 @api.route('/admin/randnum/')
 def all_randnums():
-    randnums = Randnum.query.all()
+    # randnums = TdRandomMnge.query.all()
+    # return jsonify({
+    #     'randnums': [randnum.to_json() for randnum in randnums]
+    # })
+    page = request.args.get('page', 1, type=int)
+    pagination = TdRandomMnge.query.paginate(page, per_page=20, error_out=False)
+    TdRandomMnges = pagination.items
+    prev = None
+    if pagination.has_prev:
+        prev = url_for('api.all_randnums', page=page - 1)
+    next = None
+    if pagination.has_next:
+        next = url_for('api.all_randnums', page=page + 1)
+
     return jsonify({
-        'randnums': [randnum.to_json() for randnum in randnums]
+        'randnum': [rn.to_json() for rn in TdRandomMnges],
+        'prev': prev,
+        'next': next,
+        'count': pagination.total
     })
 
 
 @api.route('/admin/randnum/', methods=['POST'])
 def register_randnum():
     json_data = request.get_json()
-    randnum = Randnum(email=json_data['email'],
-                      password=json_data['password'],
-                      name=json_data['name'])
+    randnum = TdRandomMnge(companyCode=json_data['companyCode'],
+                           delYN=json_data['delYN'],
+                           dtExpired=json_data['dtExpired'],
+                           dtModified=json_data['dtModified'],
+                           dtRegistered=json_data['dtRegistered'],
+                           dtPrinted=json_data['dtPrinted'],
+                           dtShipping=json_data['dtShipping'],
+                           memo=json_data['memo'],
+                           modifier=json_data['modifier'],
+                           registrant=json_data['registrant'],
+                           retailerID=json_data['retailerID'],
+                           tableNum=json_data['tableNum'],
+                           tagCode=json_data['tagCode'],
+                           ticketCnt=json_data['ticketCnt'],
+                           ticketEndIdx=json_data['ticketEndIdx'],
+                           ticketFileName=json_data['ticketFileName'],
+                           ticketListState=json_data['ticketListState'],
+                           ticketStartIdx=json_data['ticketStartIdx'])
     db.session.add(randnum)
     db.session.commit()
     return jsonify({'result': 'success'})
@@ -223,7 +260,7 @@ def register_randnum():
 
 @api.route('/admin/randnum/<int:id>', methods=['PUT'])
 def update_randnum(id):
-    randnum = Randnum.query.get_or_404(id)
+    randnum = TdRandomMnge.query.get_or_404(id)
     randnum.update_randnum()
     db.session.commit()
     return jsonify(randnum.to_json())
@@ -240,9 +277,14 @@ def all_admin_apps():
 @api.route('/admin/app/', methods=['POST'])
 def register_admin_app():
     json_data = request.get_json()
-    app = TdAdminApp(email=json_data['email'],
-                     password=json_data['password'],
-                     name=json_data['name'])
+    app = TdAdminApp(companyName=json_data['companyName'],
+                     contact=json_data['contact'],
+                     dtModified=json_data['dtModified'],
+                     dtRegistered=json_data['dtRegistered'],
+                     modifier=json_data['modifier'],
+                     name=json_data['name'],
+                     pushToken=json_data['pushToken'],
+                     state=json_data['state'])
     db.session.add(app)
     db.session.commit()
     return jsonify({'result': 'success'})
