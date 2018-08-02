@@ -159,7 +159,7 @@ def register_blacklist():
                           name=json_data['name'])
     db.session.add(blacklist)
     db.session.commit()
-    return jsonify({'result': 'success'})git
+    return jsonify({'result': 'success'})
 
 
 @api.route('/admin/blacklist/<int:id>', methods=['DELETE'])
