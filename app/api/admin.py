@@ -1,6 +1,7 @@
-from flask import jsonify, request
+from flask import jsonify, request, url_for
 
 from app import db
+from app.models import TdBlackList, TdRetailer
 from . import api
 
 
@@ -133,11 +134,26 @@ def get_user_access():
 # query.page
 @api.route('/admin/blacklist/')
 def all_blacklists():
-    blacklists = Blacklist.query.all()
-    return jsonify({
-        'blacklists': [blacklist.to_json() for blacklist in blacklists]
-    })
+    # blacklists = TdBlackList.query.all()
+    # return jsonify({
+    #     'blacklists': [blacklist.to_json() for blacklist in blacklists]
+    # })
+    page = request.args.get('page', 1, type=int)
+    pagination = TdBlackList.query.paginate(page, per_page=20, error_out=False)
+    blacklists = pagination.items
+    prev = None
+    if pagination.has_prev:
+        prev = url_for('api.all_blacklists', page=page-1)
+    next = None
+    if pagination.has_next:
+        next = url_for('api.all_blacklists', page=page+1)
 
+    return jsonify({
+        'blacklists': [bls.to_json() for bls in blacklists],
+        'prev': prev,
+        'next': next,
+        'count': pagination.total
+    })
 
 @api.route('/admin/blacklist/', methods=['POST'])
 def register_blacklist():
@@ -224,7 +240,7 @@ def update_admin_app(id):
 
 @api.route('/admin/distributor/')
 def all_distributors():
-    distributors = Distributor.query.all()
+    distributors = TdRetailer.query.all()
     return jsonify({
         'distributors': [distributor.to_json() for distributor in distributors]
     })

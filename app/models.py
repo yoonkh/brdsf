@@ -121,6 +121,33 @@ class TdAdmin(db.Model):
     failCount = db.Column(db.SmallInteger, server_default=db.FetchedValue())
 
 
+    def to_json(self):
+        json_user = {
+            'idx': self.idx,
+            'id': self.id,
+            'pwd': self.pwd,
+            'name_kr': self.name_kr,
+            'name_en': self.name_en,
+            'name_zh': self.name_zh,
+            'phone': self.phone,
+            'telephone': self.telephone,
+            'fax': self.fax,
+            'companyCode': self.companyCode,
+            'role': self.role,
+            'position': self.position,
+            'department': self.department,
+            'state': self.state,
+            'registrant': self.registrant,
+            'dtRegistered': self.dtRegistered,
+            'modifier': self.modifier,
+            'dtModified': self.dtModified,
+            'dtLastConnected': self.dtLastConnected,
+            'note': self.note,
+            'failCount': self.failCount
+        }
+        return json_user
+
+
 class TdApp(db.Model):
     __tablename__ = 'td_app'
 
@@ -257,6 +284,19 @@ class TdBlackList(db.Model):
     registrant = db.Column(db.String(50), nullable=False)
     dtModified = db.Column(db.DateTime, nullable=False, server_default=db.FetchedValue())
     modifier = db.Column(db.String(50), nullable=False)
+
+    def to_json(self):
+        json_black_list = {
+            'idx': self.idx,
+            'pushToken': self.pushToken,
+            'blType': self.blType,
+            'delYN': self.delYN,
+            'dtRegistered': self.dtRegistered,
+            'registrant': self.registrant,
+            'dtModified': self.dtModified,
+            'modifier': self.modifier
+        }
+        return json_black_list
 
 
 class TdCompany(db.Model):
@@ -401,6 +441,24 @@ class TdRetailer(db.Model):
     dtModified = db.Column(db.DateTime)
 
     td_company = db.relationship('TdCompany', primaryjoin='TdRetailer.companyCode == TdCompany.code', backref='td_retailers')
+
+    def to_json(self):
+        json_retailer = {
+            'idx': self.idx,
+            'rtid': self.rtid,
+            'name_kr': self.name_kr,
+            'name_en': self.name_en,
+            'name_zh': self.name_zh,
+            'companyCode': self.companyCode,
+            'state': self.state,
+            'note': self.note,
+            'headerquarterYN': self.headerquarterYN,
+            'registrant': self.registrant,
+            'dtRegistered': self.dtRegistered,
+            'modifier': self.modifier,
+            'dtModified': self.dtModified
+        }
+        return json_retailer
 
 
 class TdServiceTerm(db.Model):
