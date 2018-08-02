@@ -191,3 +191,6 @@ venv.bak/
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+*.pyc
+__pycache__/
