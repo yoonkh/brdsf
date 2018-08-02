@@ -76,6 +76,7 @@ class TdAccount(db.Model):
             'idx': self.idx,
             'id': self.id,
             'pwd': self.pwd,
+            'email': self.email,
             'name_kr': self.name_kr,
             'name_en': self.name_en,
             'name_zh': self.name_zh,
@@ -233,16 +234,18 @@ class TdApp(db.Model):
             'type': self.type,
             'tagType': self.tagType,
             'companyCode': self.companyCode,
-            'description': self.description,
-            'dtPublished': self.dtPublished,
             'registrant': self.registrant,
             'dtRegistered': self.dtRegistered,
             'modifier': self.modifier,
             'dtModified': self.dtModified,
             'note': self.note,
+            'dtPublished': self.dtPublished,
+            'attachedPath': self.attachedPath,
+            'osType': self.osType,
+            'state': self.state,
+            'description': self.description,
             'limitCertHour': self.limitCertHour,
             'limitCertCnt': self.limitCertCnt,
-            'osType': self.osType,
             'updateUrl': self.updateUrl
         }
         return json_app
@@ -640,6 +643,17 @@ class TlLogin(db.Model):
     resultCode = db.Column(db.String(4), nullable=False)
     dtAttempted = db.Column(db.DateTime, nullable=False)
     remoteAddr = db.Column(db.String(23), nullable=False)
+
+    def to_json(self):
+        json_apps = {
+            'idx': self.idx,
+            'id': self.id,
+            'resultCode': self.resultCode,
+            'dtAttempted': self.dtAttempted,
+            'remoteAddr': self.remoteAddr,
+        }
+        return json_apps
+
 
 
     def to_json(self):

@@ -1,13 +1,19 @@
+<<<<<<< HEAD
 from flask import jsonify, request, url_for
 
+=======
+from flask import jsonify
+import json
+>>>>>>> DB
 from app import db
 from app.models import TdBlackList, TdRetailer, TdTagVersion, TdAdmin, TsCertReportCount, TlLogin
 from . import api
-
+from ..models import *
+from .helper import *
 
 @api.route('/admin/customer/')
 def all_customers():
-    customers = Customer.query.all()
+    customers = TdAccount.query.all()
     return jsonify({
         'apps': [customer.to_json() for customer in customers]
     })
@@ -106,28 +112,6 @@ def delete_icrf_user(id):
 # access.query.page 추가해야함
 @api.route('/admin/access/')
 def get_user_access():
-    # user_access = Login.query.all()
-    #
-    # try:
-    #     search_query = json_data['search']
-    #     searched_user_id = User.query.filter(User.id.like('%' + search_query + '%')).all()
-    #     searched_user_name = User.query.filter(User.name.like('%' + search_query + '%')).all()
-    #
-    #     result_dict = {"user_info": []}
-    #
-    #     if searched_user_id is not None:
-    #         for user in searched_user_id:
-    #             result_dict["user_info"].append(user.to_json())
-    #
-    #     if searched_user_name is not None:
-    #         for user in searched_user_name:
-    #             result_dict["user_info"].append(user.to_json())
-    #
-    #     return jsonify(result_dict)
-    #
-    # except Exception as e:
-    #     print(e)
-    #     return '<h1>Request에 포함된 데이터가 양식과 맞지 않거나 내부 서버 에러입니다.</h1>'
     page = request.args.get('page', 1, type=int)
     pagination = TlLogin.query.paginate(page, per_page=20, error_out=False)
     logins = pagination.items
@@ -178,7 +162,7 @@ def register_blacklist():
                           name=json_data['name'])
     db.session.add(blacklist)
     db.session.commit()
-    return jsonify({'result': 'success'})
+    return jsonify({'result': 'success'})git
 
 
 @api.route('/admin/blacklist/<int:id>', methods=['DELETE'])

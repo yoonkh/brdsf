@@ -1,12 +1,14 @@
 from flask import jsonify, request
 
+from flask import jsonify
+from ..models import *
 from app import db
 from app.models import TdApp
 from . import api
 
 
 # query.page
-@api.route('/apps/')
+@api.route('/apps/', methods=['GET'])
 def all_apps():
     apps = TdApp.query.all()
     return jsonify({
