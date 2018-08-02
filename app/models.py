@@ -729,3 +729,85 @@ class TsCertReportCount(db.Model):
         return json_cert_report
 
 
+class TdRandomMnge(db.Model):
+    __tablename__ = 'td_random_mnge'
+    __table_args__ = (
+        db.Index('idx_td_random_mnge_02', 'companyCode', 'tagCode', 'ticketStartIdx'),
+    )
+
+    idx = db.Column(db.Integer, primary_key=True)
+    companyCode = db.Column(db.ForeignKey('td_company.code'), nullable=False)
+    tagCode = db.Column(db.String(10), nullable=False)
+    retailerID = db.Column(db.ForeignKey('td_retailer.rtid'), index=True)
+    tableNum = db.Column(db.Integer, nullable=False)
+    ticketCnt = db.Column(db.Integer, nullable=False)
+    ticketStartIdx = db.Column(db.BigInteger)
+    ticketEndIdx = db.Column(db.BigInteger)
+    dtExpired = db.Column(db.DateTime)
+    ticketFileName = db.Column(db.String(128), unique=True)
+    ticketListState = db.Column(db.ENUM('ING', 'Complete'))
+    delYN = db.Column(db.ENUM('Y', 'N'), nullable=False, server_default=db.FetchedValue())
+    memo = db.Column(db.String(64))
+    dtRegistered = db.Column(db.DateTime, nullable=False, server_default=db.FetchedValue())
+    registrant = db.Column(db.String(20), nullable=False)
+    dtModified = db.Column(db.DateTime)
+    dtPrinted = db.Column(db.DateTime)
+    dtShipping = db.Column(db.DateTime)
+    modifier = db.Column(db.String(20))
+
+    td_company = db.relationship('TdCompany', primaryjoin='TdRandomMnge.companyCode == TdCompany.code', backref='td_random_mnges')
+    td_retailer = db.relationship('TdRetailer', primaryjoin='TdRandomMnge.retailerID == TdRetailer.rtid', backref='td_random_mnges')
+
+
+    def to_json(self):
+        json_cert_report = {
+            'idx': self.idx,
+            'companyCode': self.companyCode,
+            'tagCode': self.tagCode,
+            'retailerID': self.retailerID,
+            'tableNum': self.tableNum,
+            'ticketCnt': self.ticketCnt,
+            'ticketStartIdx': self.ticketStartIdx,
+            'ticketEndIdx': self.ticketEndIdx,
+            'dtExpired': self.dtExpired,
+            'ticketFileName': self.ticketFileName,
+            'ticketListState': self.ticketListState,
+            'delYN': self.delYN,
+            'memo': self.memo,
+            'dtRegistered': self.dtRegistered,
+            'registrant': self.registrant,
+            'dtModified': self.dtModified,
+            'dtPrinted': self.dtPrinted,
+            'dtShipping': self.dtShipping,
+            'modifier': self.modifier,
+        }
+        return json_cert_report
+
+
+class TdAdminApp(db.Model):
+    __tablename__ = 'td_admin_app'
+
+    idx = db.Column(db.Integer, primary_key=True)
+    pushToken = db.Column(db.String(50), nullable=False, index=True)
+    companyName = db.Column(db.String(64), nullable=False)
+    name = db.Column(db.String(64), nullable=False)
+    contact = db.Column(db.String(32), nullable=False)
+    state = db.Column(db.ENUM('Registered', 'Approved', 'Deleted'), nullable=False, server_default=db.FetchedValue())
+    dtRegistered = db.Column(db.DateTime, nullable=False, server_default=db.FetchedValue())
+    dtModified = db.Column(db.DateTime, nullable=False, server_default=db.FetchedValue())
+    modifier = db.Column(db.String(20))
+
+
+    def to_json(self):
+        json_cert_report = {
+            'idx': self.idx,
+            'pushToken': self.pushToken,
+            'companyName': self.companyName,
+            'name': self.name,
+            'contact': self.contact,
+            'state': self.state,
+            'dtRegistered': self.dtRegistered,
+            'dtModified': self.dtModified,
+            'modifier': self.modifier
+        }
+        return json_cert_report
