@@ -151,12 +151,17 @@ def all_blacklists():
         'count': pagination.total
     })
 
+
 @api.route('/admin/blacklist/', methods=['POST'])
 def register_blacklist():
     json_data = request.get_json()
-    blacklist = Blacklist(email=json_data['email'],
-                          password=json_data['password'],
-                          name=json_data['name'])
+    blacklist = TdBlackList(blType=json_data['blType'],
+                            delYN=json_data['delYN'],
+                            dtModified=json_data['dtModified'],
+                            dtRegistered=json_data['dtRegistered'],
+                            modifier=json_data['modifier'],
+                            pushToken=json_data['pushToken'],
+                            registrant=json_data['registrant'])
     db.session.add(blacklist)
     db.session.commit()
     return jsonify({'result': 'success'})
@@ -164,7 +169,7 @@ def register_blacklist():
 
 @api.route('/admin/blacklist/<int:id>', methods=['DELETE'])
 def update_blacklist(id):
-    blacklist = Blacklist.query.get_or_404(id)
+    blacklist = TdBlackList.query.get_or_404(id)
     db.sesion.delete(blacklist)
     db.session.commit()
     return jsonify(blacklist.to_json())
@@ -226,7 +231,7 @@ def update_randnum(id):
 
 @api.route('/admin/app/')
 def all_admin_apps():
-    apps = App.query.all()
+    apps = TdAdminApp.query.all()
     return jsonify({
         'apps': [app.to_json() for app in apps]
     })
@@ -235,9 +240,9 @@ def all_admin_apps():
 @api.route('/admin/app/', methods=['POST'])
 def register_admin_app():
     json_data = request.get_json()
-    app = App(email=json_data['email'],
-              password=json_data['password'],
-              name=json_data['name'])
+    app = TdAdminApp(email=json_data['email'],
+                     password=json_data['password'],
+                     name=json_data['name'])
     db.session.add(app)
     db.session.commit()
     return jsonify({'result': 'success'})
@@ -245,7 +250,7 @@ def register_admin_app():
 
 @api.route('/admin/app/<int:id>', methods=['PUT'])
 def update_admin_app(id):
-    app = App.query.get_or_404(id)
+    app = TdAdminApp.query.get_or_404(id)
     app.update_app()
     db.session.commit()
     return jsonify(app.to_json())
@@ -262,9 +267,18 @@ def all_distributors():
 @api.route('/admin/distributor/', methods=['POST'])
 def register_distributor():
     json_data = request.get_json()
-    distributor = Distributor(email=json_data['email'],
-                              password=json_data['password'],
-                              name=json_data['name'])
+    distributor = TdRetailer(companyCode=json_data['companyCode'],
+                             dtModified=json_data['dtModified'],
+                             dtRegistered=json_data['dtRegistered'],
+                             headerquarterYN=json_data['headerquarterYN'],
+                             modifier=json_data['modifier'],
+                             name_en=json_data['name_en'],
+                             name_kr=json_data['name_kr'],
+                             name_zh=json_data['name_zh'],
+                             note=json_data['note'],
+                             registrant=json_data['registrant'],
+                             rtid=json_data['rtid'],
+                             state=json_data['state'])
     db.session.add(distributor)
     db.session.commit()
     return jsonify({'result': 'success'})
@@ -272,7 +286,7 @@ def register_distributor():
 
 @api.route('/admin/distributor/<int:id>', methods=['PUT'])
 def update_distributor(id):
-    distributor = Distributor.query.get_or_404(id)
+    distributor = TdRetailer.query.get_or_404(id)
     distributor.update_distributor()
     db.session.commit()
     return jsonify(distributor.to_json())
@@ -280,7 +294,7 @@ def update_distributor(id):
 
 @api.route('/admin/distributor/<int:id>', methods=['DELETE'])
 def delete_distributor(id):
-    distributor = Distributor.query.get_or_404(id)
+    distributor = TdRetailer.query.get_or_404(id)
     db.session.delete(distributor)
     db.session.commit()
     return jsonify({'result': 'success'})
@@ -297,9 +311,20 @@ def all_tag_types():
 @api.route('/admin/tag-type/', methods=['POST'])
 def register_tag_type():
     json_data = request.get_json()
-    tag_type = Tagtype(email=json_data['email'],
-                       password=json_data['password'],
-                       name=json_data['name'])
+    tag_type = TdTagVersion(description=json_data['description'],
+                            dtModified=json_data['dtModified'],
+                            dtRegistered=json_data['dtRegistered'],
+                            height=json_data['height'],
+                            modifier=json_data['modifier'],
+                            name_en=json_data['name_en'],
+                            name_kr=json_data['name_kr'],
+                            name_zh=json_data['name_zh'],
+                            note=json_data['note'],
+                            registrant=json_data['registrant'],
+                            state=json_data['state'],
+                            type=json_data['type'],
+                            version=json_data['version'],
+                            width=json_data['width'])
     db.session.add(tag_type)
     db.session.commit()
     return jsonify({'result': 'success'})
