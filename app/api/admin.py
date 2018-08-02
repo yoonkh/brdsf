@@ -1,7 +1,7 @@
 from flask import jsonify, request, url_for
 
 from app import db
-from app.models import TdBlackList, TdRetailer
+from app.models import TdBlackList, TdRetailer, TdTagVersion, TdAdmin, TsCertReportCount, TlLogin
 from . import api
 
 
@@ -55,16 +55,15 @@ def update_customer(id):
 
 @api.route('/admin/icrf-users/')
 def all_icrf_users():
-    icrfs = Icrf.query.all()
-    return jsonify({
-        'apps': [icrf.to_json() for icrf in icrfs]
-    })
-
+   icrfs = TdAdmin.query.all()
+   return jsonify({
+       'icrf-users': [icrf.to_json() for icrf in icrfs]
+   })
 
 @api.route('/admin/icrf-users/', methods=['POST'])
 def register_icrf_user():
     json_data = request.get_json()
-    icrf = ICraftaccount(id=json_data['id'],
+    icrf = TdAdmin(id=json_data['id'],
                          email=json_data['email'],
                          password_hash=json_data['password'],
                          name=json_data['name'],
@@ -84,13 +83,13 @@ def register_icrf_user():
 
 @api.route('/admin/icrf-users/<int:id>')
 def get_icrf_user(id):
-    icrf = Icrf.query.get_or_404(id)
+    icrf = TdAdmin.query.get_or_404(id)
     return jsonify(icrf.to_json())
 
 
 @api.route('/admin/icrf-users/<int:id>', methods=['PUT'])
 def update_icrf_user(id):
-    icrf = Icrf.query.get_or_404(id)
+    icrf = TdAdmin.query.get_or_404(id)
     icrf.update_icrf()
     db.session.commit()
     return jsonify(icrf.to_json())
@@ -98,7 +97,7 @@ def update_icrf_user(id):
 
 @api.route('/admin/icrf-users/<int:id>', methods=['DELETE'])
 def delete_icrf_user(id):
-    icrf = Icrf.query.get_or_404(id)
+    icrf = TdAdmin.query.get_or_404(id)
     db.session.delete(icrf)
     db.session.commit()
     return jsonify({'result': 'success'})
@@ -107,28 +106,44 @@ def delete_icrf_user(id):
 # access.query.page 추가해야함
 @api.route('/admin/access/')
 def get_user_access():
-    user_access = Login.query.all()
+    # user_access = Login.query.all()
+    #
+    # try:
+    #     search_query = json_data['search']
+    #     searched_user_id = User.query.filter(User.id.like('%' + search_query + '%')).all()
+    #     searched_user_name = User.query.filter(User.name.like('%' + search_query + '%')).all()
+    #
+    #     result_dict = {"user_info": []}
+    #
+    #     if searched_user_id is not None:
+    #         for user in searched_user_id:
+    #             result_dict["user_info"].append(user.to_json())
+    #
+    #     if searched_user_name is not None:
+    #         for user in searched_user_name:
+    #             result_dict["user_info"].append(user.to_json())
+    #
+    #     return jsonify(result_dict)
+    #
+    # except Exception as e:
+    #     print(e)
+    #     return '<h1>Request에 포함된 데이터가 양식과 맞지 않거나 내부 서버 에러입니다.</h1>'
+    page = request.args.get('page', 1, type=int)
+    pagination = TlLogin.query.paginate(page, per_page=20, error_out=False)
+    logins = pagination.items
+    prev = None
+    if pagination.has_prev:
+        prev = url_for('api.get_user_access', page=page - 1)
+    next = None
+    if pagination.has_next:
+        next = url_for('api.get_user_access', page=page + 1)
 
-    try:
-        search_query = json_data['search']
-        searched_user_id = User.query.filter(User.id.like('%' + search_query + '%')).all()
-        searched_user_name = User.query.filter(User.name.like('%' + search_query + '%')).all()
-
-        result_dict = {"user_info": []}
-
-        if searched_user_id is not None:
-            for user in searched_user_id:
-                result_dict["user_info"].append(user.to_json())
-
-        if searched_user_name is not None:
-            for user in searched_user_name:
-                result_dict["user_info"].append(user.to_json())
-
-        return jsonify(result_dict)
-
-    except Exception as e:
-        print(e)
-        return '<h1>Request에 포함된 데이터가 양식과 맞지 않거나 내부 서버 에러입니다.</h1>'
+    return jsonify({
+        'logins': [log.to_json() for log in logins],
+        'prev': prev,
+        'next': next,
+        'count': pagination.total
+    })
 
 
 # query.page
@@ -177,9 +192,26 @@ def update_blacklist(id):
 # over-cert.query.page 추가해야함
 @api.route('/admin/over-cert/')
 def get_over_cert():
-    over_cert = Over.query.all()
+    # over_cert = TsCertReportCount.query.all()
+    # return jsonify({
+    #     'over_cert': [over.to_json() for over in over_cert]
+    # })
+
+    page = request.args.get('page', 1, type=int)
+    pagination = TsCertReportCount.query.paginate(page, per_page=20, error_out=False)
+    get_over_certs = pagination.items
+    prev = None
+    if pagination.has_prev:
+        prev = url_for('api.get_over_cert', page=page - 1)
+    next = None
+    if pagination.has_next:
+        next = url_for('api.get_over_cert', page=page + 1)
+
     return jsonify({
-        'over_cert': [over.to_json() for over in over_cert]
+        'get_over_cert': [get_over_cert.to_json() for get_over_cert in get_over_certs],
+        'prev': prev,
+        'next': next,
+        'count': pagination.total
     })
 
 
@@ -275,9 +307,9 @@ def delete_distributor(id):
 
 @api.route('/admin/tag-type/')
 def all_tag_types():
-    tag_types = Tagtype.query.all()
+    tag_types = TdTagVersion.query.all()
     return jsonify({
-        'distributors': [tag_type.to_json() for tag_type in tag_types]
+        'tag_type': [tag_type.to_json() for tag_type in tag_types]
     })
 
 
@@ -294,7 +326,7 @@ def register_tag_type():
 
 @api.route('/admin/tag-type/<int:id>', methods=['PUT'])
 def update_tag_type(id):
-    tag_type = Tagtype.query.get_or_404(id)
+    tag_type = TdTagVersion.query.get_or_404(id)
     tag_type.update_distributor()
     db.session.commit()
     return jsonify(tag_type.to_json())
@@ -302,7 +334,7 @@ def update_tag_type(id):
 
 @api.route('/admin/tag-type/<int:id>', methods=['DELETE'])
 def delete_tag_type(id):
-    tag_type = Tagtype.query.get_or_404(id)
+    tag_type = TdTagVersion.query.get_or_404(id)
     db.session.delete(tag_type)
     db.session.commit()
     return jsonify({'result': 'success'})

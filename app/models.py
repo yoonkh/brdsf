@@ -120,19 +120,15 @@ class TdAdmin(db.Model):
     note = db.Column(db.Text)
     failCount = db.Column(db.SmallInteger, server_default=db.FetchedValue())
 
-
     def to_json(self):
         json_user = {
             'idx': self.idx,
             'id': self.id,
             'pwd': self.pwd,
-            'name_kr': self.name_kr,
-            'name_en': self.name_en,
-            'name_zh': self.name_zh,
+            'email': self.email,
+            'name': self.name,
             'phone': self.phone,
             'telephone': self.telephone,
-            'fax': self.fax,
-            'companyCode': self.companyCode,
             'role': self.role,
             'position': self.position,
             'department': self.department,
@@ -497,6 +493,26 @@ class TdTagVersion(db.Model):
     td_admin = db.relationship('TdAdmin', primaryjoin='TdTagVersion.modifier == TdAdmin.id', backref='tdadmin_td_tag_versions')
     td_admin1 = db.relationship('TdAdmin', primaryjoin='TdTagVersion.registrant == TdAdmin.id', backref='tdadmin_td_tag_versions_0')
 
+    def to_json(self):
+        json_tag_version = {
+            'idx': self.idx,
+            'version': self.version,
+            'name_kr': self.name_kr,
+            'name_en': self.name_en,
+            'name_zh': self.name_zh,
+            'type': self.type,
+            'width': self.width,
+            'state': self.state,
+            'height': self.height,
+            'description': self.description,
+            'registrant': self.registrant,
+            'dtRegistered': self.dtRegistered,
+            'modifier': self.modifier,
+            'dtModified': self.dtModified,
+            'note': self.note
+        }
+        return json_tag_version
+
 
 class ThCertification(db.Model):
     __tablename__ = 'th_certification'
@@ -626,6 +642,17 @@ class TlLogin(db.Model):
     remoteAddr = db.Column(db.String(23), nullable=False)
 
 
+    def to_json(self):
+        json_login = {
+            'idx': self.idx,
+            'id': self.id,
+            'resultCode': self.resultCode,
+            'dtAttempted': self.dtAttempted,
+            'remoteAddr': self.remoteAddr
+        }
+        return json_login
+
+
 class TsActiveUniqueCount(db.Model):
     __tablename__ = 'ts_active_unique_count'
     __table_args__ = (
@@ -673,5 +700,18 @@ class TsCertReportCount(db.Model):
     count = db.Column(db.Integer, nullable=False, server_default=db.FetchedValue())
     registerDt = db.Column(db.DateTime)
 
+    def to_json(self):
+        json_cert_report = {
+            'idx': self.idx,
+            'companyCode': self.companyCode,
+            'tagType': self.tagType,
+            'tagCode': self.tagCode,
+            'osType': self.osType,
+            'type': self.type,
+            'date': self.date,
+            'count': self.count,
+            'registerDt': self.registerDt
+        }
+        return json_cert_report
 
 
