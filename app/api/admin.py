@@ -1,10 +1,7 @@
-<<<<<<< HEAD
 from flask import jsonify, request, url_for
 
-=======
 from flask import jsonify
 import json
->>>>>>> DB
 from app import db
 from app.models import TdBlackList, TdRetailer, TdTagVersion, TdAdmin, TsCertReportCount, TlLogin
 from . import api
