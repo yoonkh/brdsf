@@ -2,6 +2,7 @@ from flask import jsonify, request
 
 from app import db
 from app.models import TdCompany
+from . import api
 
 
 @api.route('/company/')
