@@ -2,6 +2,8 @@ from datetime import *
 from dateutil.relativedelta import relativedelta
 from flask import request
 # from itertools import groupby
+from datetime import *
+from dateutil.relativedelta import relativedelta
 
 
 def log_date_range():
@@ -61,3 +63,18 @@ def log_date_range():
 #     #     monthly_worktimes[monthes[month]]['over_work'] = ows
 #
 #     return monthly_worktimes
+
+
+def cert_date_range():
+
+    end = datetime.now() - relativedelta(days=4)
+    start = datetime.now() - relativedelta(hours=8, days=4)
+
+    return start, end
+
+def static_date_range():
+
+    end = datetime.now()
+    start = datetime.now() - relativedelta(days=1, months=1)
+
+    return start, end

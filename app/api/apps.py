@@ -52,8 +52,30 @@ def get_app(id):
 
 @api.route('/apps/<int:id>', methods=['PUT'])
 def update_app(id):
+    json_data = request.get_json()
     app = TdApp.query.get_or_404(id)
-    app.update_app()
+
+    app.companyCode = json_data.get('companyCode') or app.companyCode
+    app.registrant = json_data.get('registrant') or app.registrant
+    app.addr_kr = json_data.get('addr_kr') or app.addr_kr
+    app.name_en = json_data.get('name_en') or app.name_en
+    app.name_zh = json_data.get('name_zh') or app.name_zh
+    app.version = json_data.get('version') or app.version
+    app.type = json_data.get('type') or app.type
+    app.tagType = json_data.get('tagType') or app.tagType
+    app.dtRegistered = json_data.get('dtRegistered') or app.dtRegistered
+    app.note = json_data.get('note') or app.note
+    app.dtPublished = json_data.get('dtPublished') or app.dtPublished
+    app.attachedPath = json_data.get('attachedPath') or app.attachedPath
+    app.osType = json_data.get('osType') or app.osType
+    app.modifier = json_data.get('modifier') or app.modifier
+    app.dtModified = json_data.get('dtModified') or app.dtModified
+    app.description = json_data.get('description') or app.description
+    app.limitCertHour = json_data.get('limitCertHour') or app.limitCertHour
+    app.limitCertCnt = json_data.get('limitCertCnt') or app.limitCertCnt
+    app.updateUrl = json_data.get('updateUrl') or app.updateUrl
+
+    db.session.add(app)
     db.session.commit()
     return jsonify(app.to_json())
 
