@@ -1,61 +1,127 @@
-from flask import jsonify, request, url_for
-
-from flask import jsonify
-import json
-from app import db
-from app.models import TdBlackList, TdRetailer, TdTagVersion, TdAdmin, TsCertReportCount, TlLogin
-from . import api
 from ..models import *
-from .helper import *
 
-@api.route('/admin/customer/')
-def all_customers():
-    customers = TdCompany.query.all()
+from flask import jsonify, request, current_app, url_for
+
+from app import db
+from app.api.decorators import accessible_oneself
+from app.api.errors import forbidden
+from . import api
+from ..models import TdAccount
+
+
+@api.route('/admin/users/')
+def all_users():
+    users = TdAccount.query.all()
     return jsonify({
-        'customers': [customer.to_json() for customer in customers]
+        'users': [user.to_json() for user in users]
     })
 
 
-@api.route('/admin/customer/', methods=['POST'])
-def register_customer():
+@api.route('/admin/users/', methods=['POST'])
+def register_user():
     json_data = request.get_json()
-    customer = TdCompany(code=json_data['code'],
-                         name_kr=json_data['name_kr'],
-                         name_en=json_data['name_en'],
-                         name_zh=json_data['name_zh'],
-                         registrationNumber=json_data['registrationNumber'],
-                         businessRegistrationUrl=json_data['businessRegistrationUrl'],
-                         addr_kr=json_data['addr_kr'],
-                         addr_en=json_data['addr_en'],
-                         addr_zh=json_data['addr_zh'],
-                         telephone=json_data['telephone'],
-                         fax=json_data['fax'],
-                         delegator_kr=json_data['delegator_kr'],
-                         delegator_en=json_data['delegator_en'],
-                         delegator_zh=json_data['delegator_zh'],
-                         state=json_data['state'],
-                         dtRegistered=json_data['dtRegistered'],
-                         dtModified=json_data['dtModified'],
-                         note=json_data['note'],
-                         ci=json_data['ci'],
-                         url=json_data['url'],
-                         description_kr=json_data['description_kr'],
-                         description_en=json_data['description_en'],
-                         description_zh=json_data['description_zh'],
-                         tntLogoImgUrl=json_data['tntLogoImgUrl'],
-                         registrant=json_data['registrant'],
-                         modifier=json_data['modifier'])
-    db.session.add(customer)
+    user = TdAccount(id=json_data['id'],
+                     pwd=json_data['pwd'],
+                     email=json_data['email'],
+                     name_kr=json_data['name_kr'],
+                     name_en=json_data['name_en'],
+                     name_zh=json_data['name_zh'],
+                     phone=json_data['phone'],
+                     telephone=json_data['telephone'],
+                     fax=json_data['fax'],
+                     position=json_data['position'],
+                     companyCode=json_data['companyCode'],
+                     role=json_data['role'],
+                     department=json_data['department'],
+                     state=json_data['state'],
+                     registrant=json_data['registrant'],
+                     dtRegistered=json_data['dtRegistered'],
+                     modifier=json_data['modifier'],
+                     dtModified=json_data['dtModified'],
+                     dtLastConnected=json_data['dtLastConnected'],
+                     note=json_data['note'],
+                     failCount=json_data['failCount'])
+    db.session.add(user)
     db.session.commit()
     return jsonify({'result': 'success'})
 
 
-@api.route('/admin/customer/<int:id>', methods=['PUT'])
-def update_customer(id):
-    customer = TdCompany.query.get_or_404(id)
-    customer.update_app()
+@api.route('/admin/users/<int:id>')
+def get_user(id):
+    user = TdAccount.query.get_or_404(id)
+    return jsonify(user.to_json())
+
+
+@api.route('/admin/users/<int:id>', methods=['PUT'])
+def update_user(id):
+    json_data = request.get_json()
+    user = TdAccount.query.get_or_404(id)
+
+    user.id = json_data.get('id') or user.id
+    user.pwd = json_data.get('pwd') or user.pwd
+    user.email = json_data.get('email') or user.email
+    user.name_kr = json_data.get('name_kr') or user.name_kr
+    user.name_en = json_data.get('name_en') or user.name_en
+    user.name_zh = json_data.get('name_zh') or user.name_zh
+    user.phone = json_data.get('phone') or user.phone
+    user.telephone = json_data.get('telephone') or user.telephone
+    user.fax = json_data.get('fax') or user.fax
+    user.position = json_data.get('position') or user.position
+    user.companyCode = json_data.get('companyCode') or user.companyCode
+    user.role = json_data.get('role') or user.role
+    user.department = json_data.get('department') or user.department
+    user.state = json_data.get('state') or user.state
+    user.registrant = json_data.get('registrant') or user.registrant
+    user.dtRegistered = json_data.get('dtRegistered') or user.dtRegistered
+    user.modifier = json_data.get('modifier') or user.modifier
+    user.dtModified = json_data.get('dtModified') or user.dtModified
+    user.dtLastConnected = json_data.get('dtLastConnected') or user.dtLastConnected
+    user.note = json_data.get('note') or user.note
+    user.failCount = json_data.get('failCount') or user.failCount
+
+    db.session.add(user)
     db.session.commit()
-    return jsonify(customer.to_json())
+
+    print(user)
+    return jsonify({'result': 'success'})
+
+
+@api.route('/admin/users/<int:id>', methods=['DELETE'])
+def delete_user(id):
+    user = TdAccount.query.get_or_404(id)
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({'result': 'success'})
+
+
+@api.route('/admin/users/<int:id>/pw-reset', methods=['PUT'])
+@accessible_oneself()
+def reset_password(id):
+    # user = TdAccount.query.get_or_404(id)
+    # password = user.reset_password()
+    # db.session.commit()
+    # return jsonify({'result': 'success', 'password': password})
+    user = g.user
+    passwords = request.get_json()
+    old_password = passwords.get('old_password')
+    new_password = passwords.get('new_password')
+
+    if not user.verify_password(old_password):
+        return forbidden('Invalid credentials')
+    else:
+        user.pwd = new_password
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({'result': 'success'})
+
+
+@api.route('/admin/users/<int:id>/change-role/', methods=['PUT'])
+def change_role(id):
+    user = TdAccount.query.get_or_404(id)
+    role = request.args.get('role', user.role.name)
+    user.change_role(role)
+    db.session.commit()
+    return jsonify({'result': 'success'})
 
 
 @api.route('/admin/icrf-users/')
