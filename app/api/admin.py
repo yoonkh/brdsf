@@ -1,6 +1,6 @@
 from ..models import *
 
-from flask import jsonify, request, current_app, url_for
+from flask import jsonify, request, current_app, url_for, g
 
 from app import db
 from app.api.decorators import accessible_oneself
@@ -95,24 +95,21 @@ def delete_user(id):
 
 
 @api.route('/admin/users/<int:id>/pw-reset', methods=['PUT'])
-@accessible_oneself()
 def reset_password(id):
-    # user = TdAccount.query.get_or_404(id)
-    # password = user.reset_password()
-    # db.session.commit()
-    # return jsonify({'result': 'success', 'password': password})
-    user = g.user
-    passwords = request.get_json()
-    old_password = passwords.get('old_password')
-    new_password = passwords.get('new_password')
-
-    if not user.verify_password(old_password):
-        return forbidden('Invalid credentials')
-    else:
-        user.pwd = new_password
+    json_data = request.get_json()
+    user = TdAccount.query.get_or_404(id)
+    old_pwd = json_data.get('old_pwd')
+    new_pwd = json_data.get('new_pwd')
+    print(old_pwd)
+    if old_pwd == user.pwd:
+        user.pwd = new_pwd
         db.session.add(user)
         db.session.commit()
-        return jsonify({'result': 'success'})
+        response = {'result': 'success'}
+    else:
+        response = {'result': 'fail'}
+    return jsonify({'result': response, 'new_password': user.pwd})
+
 
 
 @api.route('/admin/users/<int:id>/change-role/', methods=['PUT'])
@@ -164,10 +161,30 @@ def get_icrf_user(id):
 
 @api.route('/admin/icrf-users/<int:id>', methods=['PUT'])
 def update_icrf_user(id):
+    json_data = request.get_json()
     icrf = TdAdmin.query.get_or_404(id)
-    icrf.update_icrf()
+
+    icrf.id = json_data.get('id') or icrf.id
+    icrf.pwd = json_data.get('pwd') or icrf.pwd
+    icrf.email = json_data.get('email') or icrf.email
+    icrf.department = json_data.get('department') or icrf.department
+    icrf.dtLastConnected = json_data.get('dtLastConnected') or icrf.dtLastConnected
+    icrf.dtModified = json_data.get('dtModified') or icrf.dtModified
+    icrf.dtRegistered = json_data.get('dtRegistered') or icrf.dtRegistered
+    icrf.failCount = json_data.get('failCount') or icrf.failCount
+    icrf.modifier = json_data.get('modifier') or icrf.modifier
+    icrf.name = json_data.get('name') or icrf.name
+    icrf.note = json_data.get('note') or icrf.note
+    icrf.phone = json_data.get('phone') or icrf.phone
+    icrf.position = json_data.get('position') or icrf.position
+    icrf.registrant = json_data.get('registrant') or icrf.registrant
+    icrf.role = json_data.get('role') or icrf.role
+    icrf.state = json_data.get('state') or icrf.state
+    icrf.telephone = json_data.get('telephone') or icrf.telephone
+
+    db.session.add(icrf)
     db.session.commit()
-    return jsonify(icrf.to_json())
+    return jsonify({'result': 'success'})
 
 
 @api.route('/admin/icrf-users/<int:id>', methods=['DELETE'])
@@ -326,10 +343,31 @@ def register_randnum():
 
 @api.route('/admin/randnum/<int:id>', methods=['PUT'])
 def update_randnum(id):
+    json_data = request.get_json()
     randnum = TdRandomMnge.query.get_or_404(id)
-    randnum.update_randnum()
+
+    randnum.companyCode = json_data.get('companyCode') or randnum.companyCode
+    randnum.delYN = json_data.get('delYN') or randnum.delYN
+    randnum.dtExpired = json_data.get('dtExpired') or randnum.dtExpired
+    randnum.dtModified = json_data.get('dtModified') or randnum.dtModified
+    randnum.dtPrinted = json_data.get('dtPrinted') or randnum.dtPrinted
+    randnum.dtRegistered = json_data.get('dtRegistered') or randnum.dtRegistered
+    randnum.dtShipping = json_data.get('dtShipping') or randnum.dtShipping
+    randnum.memo = json_data.get('memo') or randnum.memo
+    randnum.modifier = json_data.get('modifier') or randnum.modifier
+    randnum.registrant = json_data.get('registrant') or randnum.registrant
+    randnum.retailerID = json_data.get('retailerID') or randnum.retailerID
+    randnum.tableNum = json_data.get('tableNum') or randnum.tableNum
+    randnum.tagCode = json_data.get('tagCode') or randnum.tagCode
+    randnum.ticketCnt = json_data.get('ticketCnt') or randnum.ticketCnt
+    randnum.ticketEndIdx = json_data.get('ticketEndIdx') or randnum.ticketEndIdx
+    randnum.ticketFileName = json_data.get('ticketFileName') or randnum.ticketFileName
+    randnum.ticketListState = json_data.get('ticketListState') or randnum.ticketListState
+    randnum.ticketStartIdx = json_data.get('ticketStartIdx') or randnum.ticketStartIdx
+
+    db.session.add(randnum)
     db.session.commit()
-    return jsonify(randnum.to_json())
+    return jsonify({'result': 'success'})
 
 
 @api.route('/admin/app/')
@@ -358,10 +396,21 @@ def register_admin_app():
 
 @api.route('/admin/app/<int:id>', methods=['PUT'])
 def update_admin_app(id):
+    json_data = request.get_json()
     app = TdAdminApp.query.get_or_404(id)
-    app.update_app()
+
+    app.companyName = json_data.get('companyName') or app.companyName
+    app.contact = json_data.get('contact') or app.contact
+    app.dtModified = json_data.get('dtModified') or app.dtModified
+    app.dtRegistered = json_data.get('dtRegistered') or app.dtRegistered
+    app.modifier = json_data.get('modifier') or app.modifier
+    app.name = json_data.get('name') or app.name
+    app.pushToken = json_data.get('pushToken') or app.pushToken
+    app.state = json_data.get('state') or app.state
+
+    db.session.add(app)
     db.session.commit()
-    return jsonify(app.to_json())
+    return jsonify({'result': 'success'})
 
 
 @api.route('/admin/distributor/')
@@ -394,10 +443,25 @@ def register_distributor():
 
 @api.route('/admin/distributor/<int:id>', methods=['PUT'])
 def update_distributor(id):
+    json_data =request.get_json()
     distributor = TdRetailer.query.get_or_404(id)
-    distributor.update_distributor()
+
+    distributor.companyCode = json_data.get('companyCode') or distributor.companyCode
+    distributor.dtModified = json_data.get('dtModified') or distributor.dtModified
+    distributor.dtRegistered = json_data.get('dtRegistered') or distributor.dtRegistered
+    distributor.headerquarterYN = json_data.get('headerquarterYN') or distributor.headerquarterYN
+    distributor.modifier = json_data.get('modifier') or distributor.modifier
+    distributor.name_en = json_data.get('name_en') or distributor.name_en
+    distributor.name_kr = json_data.get('name_kr') or distributor.name_kr
+    distributor.name_zh = json_data.get('name_zh') or distributor.name_zh
+    distributor.note = json_data.get('note') or distributor.note
+    distributor.registrant = json_data.get('registrant') or distributor.registrant
+    distributor.rtid = json_data.get('rtid') or distributor.rtid
+    distributor.state = json_data.get('state') or distributor.state
+
+    db.session.add(distributor)
     db.session.commit()
-    return jsonify(distributor.to_json())
+    return jsonify({'result': 'success'})
 
 
 @api.route('/admin/distributor/<int:id>', methods=['DELETE'])
@@ -440,10 +504,28 @@ def register_tag_type():
 
 @api.route('/admin/tag-type/<int:id>', methods=['PUT'])
 def update_tag_type(id):
+    json_data = request.get_json()
     tag_type = TdTagVersion.query.get_or_404(id)
-    tag_type.update_distributor()
+
+    tag_type.description = json_data.get('description') or tag_type.description
+    tag_type.dtModified = json_data.get('dtModified') or tag_type.dtModified
+    tag_type.dtRegistered = json_data.get('dtRegistered') or tag_type.dtRegistered
+    tag_type.height = json_data.get('height') or tag_type.height
+    tag_type.modifier = json_data.get('modifier') or tag_type.modifier
+    tag_type.name_en = json_data.get('name_en') or tag_type.name_en
+    tag_type.name_kr = json_data.get('name_kr') or tag_type.name_kr
+    tag_type.name_zh = json_data.get('name_zh') or tag_type.name_zh
+    tag_type.note = json_data.get('note') or tag_type.note
+    tag_type.registrant = json_data.get('registrant') or tag_type.registrant
+    tag_type.state = json_data.get('state') or tag_type.state
+    tag_type.type = json_data.get('type') or tag_type.type
+    tag_type.version = json_data.get('version') or tag_type.version
+    tag_type.width = json_data.get('width') or tag_type.width
+
+    db.session.add(tag_type)
     db.session.commit()
-    return jsonify(tag_type.to_json())
+
+    return jsonify({'result': 'success'})
 
 
 @api.route('/admin/tag-type/<int:id>', methods=['DELETE'])

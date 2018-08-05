@@ -3,6 +3,8 @@ from sqlalchemy import BigInteger, Column, DateTime, Enum, ForeignKey, Index, In
 from sqlalchemy.schema import FetchedValue
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
+
 from . import db
 
 
@@ -63,6 +65,25 @@ class TdAccount(db.Model):
 
     td_company = db.relationship('TdCompany', primaryjoin='TdAccount.companyCode == TdCompany.code', backref='td_accounts')
     tc_role = db.relationship('TcRole', primaryjoin='TdAccount.role == TcRole.code', backref='td_accounts')
+
+
+    @property
+    def password(self):
+        raise AttributeError('password is not a readable attribute')
+
+    @password.setter
+    def password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def reset_password(self):
+        # fake = Faker()
+        # password = 'icraft' + fake.password()
+        password = self.password
+        db.session.add(password)
+        return password
 
 
     def change_role(self, role_str):

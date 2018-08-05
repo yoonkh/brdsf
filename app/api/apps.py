@@ -57,7 +57,7 @@ def update_app(id):
 
     app.companyCode = json_data.get('companyCode') or app.companyCode
     app.registrant = json_data.get('registrant') or app.registrant
-    app.addr_kr = json_data.get('addr_kr') or app.addr_kr
+    app.name_kr = json_data.get('name_kr') or app.name_kr
     app.name_en = json_data.get('name_en') or app.name_en
     app.name_zh = json_data.get('name_zh') or app.name_zh
     app.version = json_data.get('version') or app.version
@@ -77,7 +77,7 @@ def update_app(id):
 
     db.session.add(app)
     db.session.commit()
-    return jsonify(app.to_json())
+    return jsonify({'result': 'success'})
 
 
 @api.route('/apps/<int:id>', methods=['DELETE'])
