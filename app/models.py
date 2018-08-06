@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import BigInteger, Column, DateTime, Enum, ForeignKey, Index, Integer, SmallInteger, String, Text
+from sqlalchemy import BigInteger, Column, DateTime,Enum, ForeignKey, Index, Integer, SmallInteger, String, Text
 from sqlalchemy.schema import FetchedValue
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
@@ -331,6 +331,38 @@ class TdCompany(db.Model):
 
     td_admin = db.relationship('TdAdmin', primaryjoin='TdCompany.modifier == TdAdmin.id', backref='tdadmin_td_companies')
     td_admin1 = db.relationship('TdAdmin', primaryjoin='TdCompany.registrant == TdAdmin.id', backref='tdadmin_td_companies_0')
+
+    def to_json(self):
+        json_black_list = {
+            'idx': self.idx,
+            'code': self.code,
+            'name_kr': self.name_kr,
+            'name_en': self.name_en,
+            'name_zh': self.name_zh,
+            'registrationNumber': self.registrationNumber,
+            'businessRegistrationUrl': self.businessRegistrationUrl,
+            'addr_kr': self.addr_kr,
+            'addr_en': self.addr_en,
+            'addr_zh': self.addr_zh,
+            'telephone': self.telephone,
+            'fax': self.fax,
+            'delegator_kr': self.delegator_kr,
+            'delegator_en': self.delegator_en,
+            'delegator_zh': self.delegator_zh,
+            'state': self.state,
+            'registrant': self.registrant,
+            'dtRegistered': self.dtRegistered,
+            'modifier': self.modifier,
+            'dtModified': self.dtModified,
+            'note': self.note,
+            'ci': self.ci,
+            'url': self.url,
+            'description_kr': self.description_kr,
+            'description_en': self.description_en,
+            'description_zh': self.description_zh,
+            'tntLogoImgUrl': self.tntLogoImgUrl,
+        }
+        return json_black_list
 
 
 class TdDevice(db.Model):
@@ -745,8 +777,8 @@ class TdRandomMnge(db.Model):
     ticketEndIdx = db.Column(db.BigInteger)
     dtExpired = db.Column(db.DateTime)
     ticketFileName = db.Column(db.String(128), unique=True)
-    ticketListState = db.Column(db.ENUM('ING', 'Complete'))
-    delYN = db.Column(db.ENUM('Y', 'N'), nullable=False, server_default=db.FetchedValue())
+    ticketListState = db.Column(db.Enum('ING', 'Complete'))
+    delYN = db.Column(db.Enum('Y', 'N'), nullable=False, server_default=db.FetchedValue())
     memo = db.Column(db.String(64))
     dtRegistered = db.Column(db.DateTime, nullable=False, server_default=db.FetchedValue())
     registrant = db.Column(db.String(20), nullable=False)
@@ -765,7 +797,7 @@ class TdRandomMnge(db.Model):
             'companyCode': self.companyCode,
             'tagCode': self.tagCode,
             'retailerID': self.retailerID,
-            'tableNum': self.tableNum,
+            'tab.Enum': self.tab.Enum,
             'ticketCnt': self.ticketCnt,
             'ticketStartIdx': self.ticketStartIdx,
             'ticketEndIdx': self.ticketEndIdx,
@@ -792,7 +824,7 @@ class TdAdminApp(db.Model):
     companyName = db.Column(db.String(64), nullable=False)
     name = db.Column(db.String(64), nullable=False)
     contact = db.Column(db.String(32), nullable=False)
-    state = db.Column(db.ENUM('Registered', 'Approved', 'Deleted'), nullable=False, server_default=db.FetchedValue())
+    state = db.Column(db.Enum('Registered', 'Approved', 'Deleted'), nullable=False, server_default=db.FetchedValue())
     dtRegistered = db.Column(db.DateTime, nullable=False, server_default=db.FetchedValue())
     dtModified = db.Column(db.DateTime, nullable=False, server_default=db.FetchedValue())
     modifier = db.Column(db.String(20))
@@ -811,3 +843,14 @@ class TdAdminApp(db.Model):
             'modifier': self.modifier
         }
         return json_cert_report
+
+class LoginTong(db.Model):
+    __tablename__ = 'tl_login_tong'
+
+    idx = db.Column(db.BigInteger, primary_key=True)
+    dtAttempted = db.Column(db.DateTime, nullable=False)
+    role = db.Column(db.String(45), nullable=False)
+    id = db.Column(db.String(20), nullable=False)
+    username = db.Column(db.String(40), nullable=False)
+    resultCode = db.Column(db.String(4), nullable=False)
+    remoteAddr = db.Column(db.String(23), nullable=False)
