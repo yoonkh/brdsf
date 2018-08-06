@@ -21,7 +21,7 @@ def all_users():
 def register_user():
     json_data = request.get_json()
     user = TdAccount(id=json_data['id'],
-                     pwd=json_data['pwd'],
+                     password=json_data['password'],
                      email=json_data['email'],
                      name_kr=json_data['name_kr'],
                      name_en=json_data['name_en'],
@@ -96,27 +96,31 @@ def delete_user(id):
 
 @api.route('/admin/users/<int:id>/pw-reset', methods=['PUT'])
 def reset_password(id):
-    json_data = request.get_json()
+    # json_data = request.get_json()
+    # user = TdAccount.query.get_or_404(id)
+    # old_pwd = json_data.get('old_pwd')
+    # new_pwd = json_data.get('new_pwd')
+    # print(old_pwd)
+    # if old_pwd == user.pwd:
+    #     user.pwd = new_pwd
+    #     db.session.add(user)
+    #     db.session.commit()
+    #     response = {'result': 'success'}
+    # else:
+    #     response = {'result': 'fail'}
+    # return jsonify({'result': response, 'new_password': user.pwd})
     user = TdAccount.query.get_or_404(id)
-    old_pwd = json_data.get('old_pwd')
-    new_pwd = json_data.get('new_pwd')
-    print(old_pwd)
-    if old_pwd == user.pwd:
-        user.pwd = new_pwd
-        db.session.add(user)
-        db.session.commit()
-        response = {'result': 'success'}
-    else:
-        response = {'result': 'fail'}
-    return jsonify({'result': response, 'new_password': user.pwd})
-
+    password = user.reset_password()
+    db.session.commit()
+    return jsonify({'result': 'success', 'password': password})
 
 
 @api.route('/admin/users/<int:id>/change-role/', methods=['PUT'])
 def change_role(id):
+    json_data = request.get_json()
     user = TdAccount.query.get_or_404(id)
-    role = request.args.get('role', user.role.name)
-    user.change_role(role)
+    user.role = json_data['role']
+    db.session.add(user)
     db.session.commit()
     return jsonify({'result': 'success'})
 

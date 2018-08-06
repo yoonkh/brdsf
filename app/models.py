@@ -1,11 +1,23 @@
 # coding: utf-8
+from flask import current_app
+from flask_login import UserMixin, AnonymousUserMixin
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from sqlalchemy import BigInteger, Column, DateTime, Enum, ForeignKey, Index, Integer, SmallInteger, String, Text
 from sqlalchemy.schema import FetchedValue
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from . import db
+from . import db, login_manager
+
+
+class Permission:
+    PERSONAL_WORKTIME = 1
+    REGISTER_WORKTIME = 2
+    TEAM_PROJECT_STATUS = 4
+    PROJECT_WORKTIME = 8
+    REPORT = 16
+    ADMIN = 32
 
 
 class TcResult(db.Model):
@@ -36,13 +48,75 @@ class TcRole(db.Model):
     dtModified = db.Column(db.DateTime, nullable=False)
     isIcraft = db.Column(db.Integer, nullable=False, server_default=db.FetchedValue())
 
+    def __init__(self, **kwargs):
+        super(TcRole, self).__init__(**kwargs)
+        if self.permissions is None:
+            self.permissions = 0
 
-class TdAccount(db.Model):
+    @staticmethod
+    def insert_roles():
+        roles = {
+            # 'Worker': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME],
+            # 'Team_Leader': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
+            #                 Permission.TEAM_PROJECT_STATUS],
+            # 'Director': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
+            #              Permission.TEAM_PROJECT_STATUS,
+            #              Permission.PROJECT_WORKTIME, Permission.REPORT],
+            # 'General_Manager': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
+            #                     Permission.TEAM_PROJECT_STATUS,
+            #                     Permission.PROJECT_WORKTIME, Permission.REPORT],
+            # 'Administrator': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
+            #                   Permission.TEAM_PROJECT_STATUS,
+            #                   Permission.PROJECT_WORKTIME, Permission.REPORT, Permission.ADMIN]
+            'CustmerUser': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME],
+            'CustmerAdmin': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
+                            Permission.TEAM_PROJECT_STATUS],
+            'iCraftUser': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
+                           Permission.TEAM_PROJECT_STATUS,
+                           Permission.PROJECT_WORKTIME, Permission.REPORT],
+            'iCraftAdministrator': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
+                                    Permission.TEAM_PROJECT_STATUS,
+                                    Permission.PROJECT_WORKTIME, Permission.REPORT],
+            'iCraftSuperAdmin': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
+                                 Permission.TEAM_PROJECT_STATUS,
+                                 Permission.PROJECT_WORKTIME, Permission.REPORT, Permission.ADMIN]
+        }
+        default = 'Worker'
+        for r in roles:
+            role = TcRole.query.filter_by(name=r).first()
+            if role is None:
+                role = TcRole(name=r)
+            role.reset_permissions()
+            for perm in roles[r]:
+                role.add_permission(perm)
+            role.default = (role.name == default)
+            db.session.add(role)
+        db.session.commit()
+
+    def add_permission(self, perm):
+        if not self.has_permission(perm):
+            self.permissions += perm
+
+    def remove_permission(self, perm):
+        if self.has_permission(perm):
+            self.permissions -= perm
+
+    def reset_permissions(self):
+        self.permissions = 0
+
+    def has_permission(self, perm):
+        return self.permissions & perm == perm
+
+    def __repr__(self):
+        return '<Role %r>' % self.name
+
+
+class TdAccount(db.Model, UserMixin):
     __tablename__ = 'td_account'
 
     idx = db.Column(db.Integer, primary_key=True)
     id = db.Column(db.String(20), nullable=False, unique=True)
-    pwd = db.Column(db.String(45), nullable=False)
+    pwd = db.Column(db.String(128))
     email = db.Column(db.String(100), nullable=False)
     name_kr = db.Column(db.String(40), nullable=False, index=True)
     name_en = db.Column(db.String(40))
@@ -66,28 +140,27 @@ class TdAccount(db.Model):
     td_company = db.relationship('TdCompany', primaryjoin='TdAccount.companyCode == TdCompany.code', backref='td_accounts')
     tc_role = db.relationship('TcRole', primaryjoin='TdAccount.role == TcRole.code', backref='td_accounts')
 
-
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
 
     @password.setter
     def password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.pwd = generate_password_hash(password)
 
     def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.pwd, password)
 
-    def reset_password(self):
-        # fake = Faker()
-        # password = 'icraft' + fake.password()
-        password = self.password
-        db.session.add(password)
-        return password
+
+    def can(self, perm):
+        return self.role is not None and self.role.has_permission(perm)
+
+    def is_administrator(self):
+        return self.can(Permission.ADMIN)
 
 
     def change_role(self, role_str):
-        role = TcRole.query.filter_by(name_kr_forAccount=role_str).first()
+        role = TcRole.query.filter_by(code=role_str).first()
         self.role = role
         db.session.add(self)
 
@@ -118,6 +191,37 @@ class TdAccount(db.Model):
             'failCount': self.failCount
         }
         return json_user
+
+    def generate_auth_token(self, expiration):
+        s = Serializer(current_app.config['SECRET_KEY'],
+                       expires_in=expiration)
+        return s.dumps({'idx': self.idx}).decode('utf-8')
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except:
+            return None
+        return TdAccount.query.get(data['idx'])
+
+    def __repr__(self):
+        return '<User %r>' % self.email
+
+
+# class AnonymousUser(AnonymousUserMixin):
+#     def can(self, permissions):
+#         return False
+#
+#     def is_administrator(self):
+#         return False
+#
+# login_manager.anonymous_user = AnonymousUser
+#
+# @login_manager.user_loader
+# def load_user(pk_id):
+#     return TdAccount.query.get(int(pk_id))
 
 
 class TdAdmin(db.Model):
