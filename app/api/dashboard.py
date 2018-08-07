@@ -1,6 +1,5 @@
 from flask import jsonify, request, current_app, url_for
 from app import db
-from app.api.decorators import accessible_oneself
 from app.api.errors import forbidden
 from . import api
 from ..models import TsCertReportCount, ThCertification, ThReport

@@ -43,4 +43,5 @@ auth = HTTPBasicAuth()
 #         return unauthorized('Invalid credentials')
 #     return jsonify({
 #       'token': g.current_user.generate_auth_token(expiration=432000),
-#       'user': g.current_user.to_json()})
+#       'user': g.current_user.to_json()
+#     })

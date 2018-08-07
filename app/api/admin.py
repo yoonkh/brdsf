@@ -3,7 +3,6 @@ from ..models import *
 from flask import jsonify, request, current_app, url_for, g
 
 from app import db
-from app.api.decorators import accessible_oneself
 from app.api.errors import forbidden
 from . import api
 from ..models import TdAccount
@@ -202,22 +201,31 @@ def delete_icrf_user(id):
 # access.query.page 추가해야함
 @api.route('/admin/access/')
 def get_user_access():
-    page = request.args.get('page', 1, type=int)
-    pagination = TlLogin.query.paginate(page, per_page=20, error_out=False)
-    logins = pagination.items
-    prev = None
-    if pagination.has_prev:
-        prev = url_for('api.get_user_access', page=page - 1)
-    next = None
-    if pagination.has_next:
-        next = url_for('api.get_user_access', page=page + 1)
-
-    return jsonify({
-        'logins': [log.to_json() for log in logins],
-        'prev': prev,
-        'next': next,
-        'count': pagination.total
-    })
+    # page = request.args.get('page', 1, type=int)
+    # pagination = TlLogin.query.paginate(page, per_page=20, error_out=False)
+    # logins = pagination.items
+    # prev = None
+    # if pagination.has_prev:
+    #     prev = url_for('api.get_user_access', page=page - 1)
+    # next = None
+    # if pagination.has_next:
+    #     next = url_for('api.get_user_access', page=page + 1)
+    #
+    # return jsonify({
+    #     'logins': [log.to_json() for log in logins],
+    #     'prev': prev,
+    #     'next': next,
+    #     'count': pagination.total
+    # })
+    query_data = request.args
+    page, search = query_data.get('page', 1), query_data.get('query', '')
+    if len(search) > 1:
+        logs = TlLogin.query.filter((TlLogin.id.ilike('%' + search + '%') |
+        (TlLogin.manager.has(TlLogin.id.ilike('%' + search + '%')))))
+    else:
+        logs = TlLogin.query
+    logs = logs.order_by(TlLogin.idx.asc()).paginate(page=int(page), per_page=20, error_out=False)
+    return jsonify({'total': logs.total, 'logs': [log.to_json() for log in logs.items]})
 
 
 # query.page

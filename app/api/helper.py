@@ -6,6 +6,17 @@ from datetime import *
 from dateutil.relativedelta import relativedelta
 
 
+def date_range():
+
+    query_data = request.args
+    start, end = query_data.get('start'), query_data.get('end')
+
+    start_date = datetime.strptime(start, '%Y-%m-%d').date() if start is not None else datetime.min
+    end_date = datetime.strptime(end, '%Y-%m-%d').date() if end is not None else datetime.max
+
+    return start_date, end_date
+
+
 def log_date_range():
 
     query_data = request.args

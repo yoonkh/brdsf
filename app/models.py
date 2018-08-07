@@ -1,4 +1,6 @@
 # coding: utf-8
+from datetime import datetime
+
 from flask import current_app
 from flask_login import UserMixin, AnonymousUserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
@@ -12,12 +14,11 @@ from . import db, login_manager
 
 
 class Permission:
-    PERSONAL_WORKTIME = 1
-    REGISTER_WORKTIME = 2
-    TEAM_PROJECT_STATUS = 4
-    PROJECT_WORKTIME = 8
-    REPORT = 16
-    ADMIN = 32
+    VIEW = 1
+    QUESTION = 2
+    WRITE = 4
+    ALL_MENU = 8
+    ICRAFT_SUPER_ADMIN = 16
 
 
 class TcResult(db.Model):
@@ -36,6 +37,7 @@ class TcRole(db.Model):
 
     idx = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.Integer, unique=True)
+    permissions = db.Column(db.Integer)
     name_kr = db.Column(db.String(45), nullable=False)
     name_en = db.Column(db.String(45))
     name_zh = db.Column(db.String(45))
@@ -56,41 +58,30 @@ class TcRole(db.Model):
     @staticmethod
     def insert_roles():
         roles = {
-            # 'Worker': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME],
-            # 'Team_Leader': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
-            #                 Permission.TEAM_PROJECT_STATUS],
-            # 'Director': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
-            #              Permission.TEAM_PROJECT_STATUS,
-            #              Permission.PROJECT_WORKTIME, Permission.REPORT],
-            # 'General_Manager': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
-            #                     Permission.TEAM_PROJECT_STATUS,
-            #                     Permission.PROJECT_WORKTIME, Permission.REPORT],
-            # 'Administrator': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
-            #                   Permission.TEAM_PROJECT_STATUS,
-            #                   Permission.PROJECT_WORKTIME, Permission.REPORT, Permission.ADMIN]
-            'CustmerUser': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME],
-            'CustmerAdmin': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
-                            Permission.TEAM_PROJECT_STATUS],
-            'iCraftUser': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
-                           Permission.TEAM_PROJECT_STATUS,
-                           Permission.PROJECT_WORKTIME, Permission.REPORT],
-            'iCraftAdministrator': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
-                                    Permission.TEAM_PROJECT_STATUS,
-                                    Permission.PROJECT_WORKTIME, Permission.REPORT],
-            'iCraftSuperAdmin': [Permission.PERSONAL_WORKTIME, Permission.REGISTER_WORKTIME,
-                                 Permission.TEAM_PROJECT_STATUS,
-                                 Permission.PROJECT_WORKTIME, Permission.REPORT, Permission.ADMIN]
+            'CustomerUser': [Permission.VIEW],
+            'CustomerAdmin': [Permission.VIEW, Permission.QUESTION],
+            'iCraftUser': [Permission.VIEW, Permission.QUESTION,
+                           Permission.WRITE],
+            'iCraftAdministrator': [Permission.VIEW, Permission.QUESTION,
+                                    Permission.WRITE,
+                                    Permission.ALL_MENU],
+            'iCraftSuperAdmin': [Permission.VIEW, Permission.QUESTION,
+                                 Permission.WRITE,
+                                 Permission.ALL_MENU, Permission.ICRAFT_SUPER_ADMIN]
         }
-        default = 'Worker'
+        default = 'CustomerUser'
         for r in roles:
-            role = TcRole.query.filter_by(name=r).first()
+            role = TcRole.query.filter_by(name_kr=r).first()
             if role is None:
-                role = TcRole(name=r)
+                role = TcRole(name_kr=r)
             role.reset_permissions()
             for perm in roles[r]:
                 role.add_permission(perm)
-            role.default = (role.name == default)
+            role.default = (role.name_kr == default)
+            role.state = 'Registered'
+            role.dtRegistered = datetime.now()
             db.session.add(role)
+            role.dtModified = datetime.now()
         db.session.commit()
 
     def add_permission(self, perm):
@@ -108,7 +99,7 @@ class TcRole(db.Model):
         return self.permissions & perm == perm
 
     def __repr__(self):
-        return '<Role %r>' % self.name
+        return '<Role %r>' % self.name_kr
 
 
 class TdAccount(db.Model, UserMixin):
@@ -151,19 +142,16 @@ class TdAccount(db.Model, UserMixin):
     def verify_password(self, password):
         return check_password_hash(self.pwd, password)
 
-
     def can(self, perm):
         return self.role is not None and self.role.has_permission(perm)
 
     def is_administrator(self):
-        return self.can(Permission.ADMIN)
-
+        return self.can(Permission.ICRAFT_SUPER_ADMIN)
 
     def change_role(self, role_str):
         role = TcRole.query.filter_by(code=role_str).first()
         self.role = role
         db.session.add(self)
-
 
     def to_json(self):
         json_user = {
@@ -179,6 +167,7 @@ class TdAccount(db.Model, UserMixin):
             'fax': self.fax,
             'companyCode': self.companyCode,
             'role': self.role,
+            'role_name': TcRole.query.filter_by(code=self.role).first().name_kr,
             'position': self.position,
             'department': self.department,
             'state': self.state,
