@@ -221,7 +221,7 @@ def get_user_access():
     page, search = query_data.get('page', 1), query_data.get('query', '')
     if len(search) > 1:
         logs = TlLogin.query.filter((TlLogin.id.ilike('%' + search + '%') |
-        (TlLogin.manager.has(TlLogin.id.ilike('%' + search + '%')))))
+        (TlLogin.id.has(TdAccount.id.ilike('%' + search + '%')))))
     else:
         logs = TlLogin.query
     logs = logs.order_by(TlLogin.idx.asc()).paginate(page=int(page), per_page=20, error_out=False)
