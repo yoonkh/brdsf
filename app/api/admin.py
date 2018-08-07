@@ -1,3 +1,4 @@
+from app.api.helper import date_range
 from ..models import *
 
 from flask import jsonify, request, current_app, url_for, g
@@ -217,40 +218,42 @@ def get_user_access():
     #     'next': next,
     #     'count': pagination.total
     # })
+    start, end = date_range()
+    dates = TlLogin.query.filter(TlLogin.dtAttempted.between(start, end)).order_by(TlLogin.dtAttempted.asc()).all()
     query_data = request.args
     page, search = query_data.get('page', 1), query_data.get('query', '')
     if len(search) > 1:
-        logs = TlLogin.query.filter((TlLogin.id.ilike('%' + search + '%') |
+        logs = dates.query.filter((TlLogin.id.ilike('%' + search + '%') |
         (TlLogin.id.has(TdAccount.id.ilike('%' + search + '%')))))
     else:
         logs = TlLogin.query
-    logs = logs.order_by(TlLogin.idx.asc()).paginate(page=int(page), per_page=20, error_out=False)
+    logs = logs.order_by(TlLogin.idx.desc()).paginate(page=int(page), per_page=20, error_out=False)
     return jsonify({'total': logs.total, 'logs': [log.to_json() for log in logs.items]})
 
 
 # query.page
 @api.route('/admin/blacklist/')
 def all_blacklists():
-    # blacklists = TdBlackList.query.all()
-    # return jsonify({
-    #     'blacklists': [blacklist.to_json() for blacklist in blacklists]
-    # })
-    page = request.args.get('page', 1, type=int)
-    pagination = TdBlackList.query.paginate(page, per_page=20, error_out=False)
-    blacklists = pagination.items
-    prev = None
-    if pagination.has_prev:
-        prev = url_for('api.all_blacklists', page=page-1)
-    next = None
-    if pagination.has_next:
-        next = url_for('api.all_blacklists', page=page+1)
-
+    blacklists = TdBlackList.query.all()
     return jsonify({
-        'blacklists': [bls.to_json() for bls in blacklists],
-        'prev': prev,
-        'next': next,
-        'count': pagination.total
+        'blacklists': [blacklist.to_json() for blacklist in blacklists]
     })
+    # page = request.args.get('page', 1, type=int)
+    # pagination = TdBlackList.query.paginate(page, per_page=20, error_out=False)
+    # blacklists = pagination.items
+    # prev = None
+    # if pagination.has_prev:
+    #     prev = url_for('api.all_blacklists', page=page-1)
+    # next = None
+    # if pagination.has_next:
+    #     next = url_for('api.all_blacklists', page=page+1)
+    #
+    # return jsonify({
+    #     'blacklists': [bls.to_json() for bls in blacklists],
+    #     'prev': prev,
+    #     'next': next,
+    #     'count': pagination.total
+    # })
 
 
 @api.route('/admin/blacklist/', methods=['POST'])
@@ -279,52 +282,63 @@ def update_blacklist(id):
 # over-cert.query.page 추가해야함
 @api.route('/admin/over-cert/')
 def get_over_cert():
-    # over_cert = TsCertReportCount.query.all()
+    # page = request.args.get('page', 1, type=int)
+    # pagination = TsCertReportCount.query.paginate(page, per_page=20, error_out=False)
+    # get_over_certs = pagination.items
+    # prev = None
+    # if pagination.has_prev:
+    #     prev = url_for('api.get_over_cert', page=page - 1)
+    # next = None
+    # if pagination.has_next:
+    #     next = url_for('api.get_over_cert', page=page + 1)
+    #
     # return jsonify({
-    #     'over_cert': [over.to_json() for over in over_cert]
+    #     'get_over_cert': [get_over_cert.to_json() for get_over_cert in get_over_certs],
+    #     'prev': prev,
+    #     'next': next,
+    #     'count': pagination.total
     # })
-
-    page = request.args.get('page', 1, type=int)
-    pagination = TsCertReportCount.query.paginate(page, per_page=20, error_out=False)
-    get_over_certs = pagination.items
-    prev = None
-    if pagination.has_prev:
-        prev = url_for('api.get_over_cert', page=page - 1)
-    next = None
-    if pagination.has_next:
-        next = url_for('api.get_over_cert', page=page + 1)
-
-    return jsonify({
-        'get_over_cert': [get_over_cert.to_json() for get_over_cert in get_over_certs],
-        'prev': prev,
-        'next': next,
-        'count': pagination.total
-    })
+    start, end = date_range()
+    dates = TsCertReportCount.query.filter(TsCertReportCount.registerDt.between(start, end)).order_by(TsCertReportCount.registerDt.asc()).all()
+    query_data = request.args
+    page, search = query_data.get('page', 1), query_data.get('query', '')
+    if len(search) > 1:
+        certs = dates.query.filter((TdAdminApp.pushToken.ilike('%' + search + '%')))
+        # (TsCertReportCount.idx.has(TdAdminApp.pushToken.ilike('%' + search + '%')))))
+    else:
+        certs = TsCertReportCount.query
+    certs = certs.order_by(TsCertReportCount.idx.desc()).paginate(page=int(page), per_page=20, error_out=False)
+    return jsonify({'total': certs.total, 'certs': [cert.to_json() for cert in certs.items]})
 
 
 # query.page
 @api.route('/admin/randnum/')
 def all_randnums():
-    # randnums = TdRandomMnge.query.all()
+    # page = request.args.get('page', 1, type=int)
+    # pagination = TdRandomMnge.query.paginate(page, per_page=20, error_out=False)
+    # TdRandomMnges = pagination.items
+    # prev = None
+    # if pagination.has_prev:
+    #     prev = url_for('api.all_randnums', page=page - 1)
+    # next = None
+    # if pagination.has_next:
+    #     next = url_for('api.all_randnums', page=page + 1)
+    #
     # return jsonify({
-    #     'randnums': [randnum.to_json() for randnum in randnums]
+    #     'randnum': [rn.to_json() for rn in TdRandomMnges],
+    #     'prev': prev,
+    #     'next': next,
+    #     'count': pagination.total
     # })
-    page = request.args.get('page', 1, type=int)
-    pagination = TdRandomMnge.query.paginate(page, per_page=20, error_out=False)
-    TdRandomMnges = pagination.items
-    prev = None
-    if pagination.has_prev:
-        prev = url_for('api.all_randnums', page=page - 1)
-    next = None
-    if pagination.has_next:
-        next = url_for('api.all_randnums', page=page + 1)
-
-    return jsonify({
-        'randnum': [rn.to_json() for rn in TdRandomMnges],
-        'prev': prev,
-        'next': next,
-        'count': pagination.total
-    })
+    query_data = request.args
+    page, search = query_data.get('page', 1), query_data.get('query', '')
+    if len(search) > 1:
+        rans = TdRandomMnge.query.filter((TdRandomMnge.tagCode.ilike('%' + search + '%')))
+        # (TlLogin.id.has(TdAccount.id.ilike('%' + search + '%')))))
+    else:
+        rans = TdRandomMnge.query
+    rans = rans.order_by(TdRandomMnge.idx.desc()).paginate(page=int(page), per_page=20, error_out=False)
+    return jsonify({'total': rans.total, 'rans': [ran.to_json() for ran in rans.items]})
 
 
 @api.route('/admin/randnum/', methods=['POST'])
