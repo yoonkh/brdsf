@@ -30,6 +30,12 @@ def log_date_range():
     return start_date, end_date
 
 
+def page_and_search():
+    query_data = request.args
+    page, search = query_data.get('page', 1), query_data.get('query', '')
+    return page, search
+
+
 # def date_range_by_year():
 #
 #     year = request.args.get('year')
