@@ -1,4 +1,5 @@
 from flask import jsonify, request, current_app, url_for
+from sqlalchemy import and_
 
 from app.api.helper import date_range, page_and_search
 from app.models import ThCertification
@@ -13,8 +14,13 @@ def all_prods():
     page, search = page_and_search()
 
     # 날짜 range and order
-    certs = ThCertification.query.filter(ThCertification.dtCertificate.between(start, end))\
-        .order_by(ThCertification.dtCertificate.asc())
+    certs = ThCertification.query.filter(ThCertification.dtCertificate.between(start, end)) \
+            .order_by(ThCertification.dtCertificate.desc())
+            # .filter(ThCertification.companyCode) \
+            # .filter(ThCertification.result) \
+            # .filter(ThCertification.tagType) \
+            # .filter(ThCertification.osType)
+
     # 각종 조건문 필터
     # 페이지네이션
     certs = certs.paginate(page=int(page), per_page=20, error_out=False).items

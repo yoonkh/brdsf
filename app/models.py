@@ -57,6 +57,7 @@ class TcRole(db.Model):
 
     @staticmethod
     def insert_roles():
+        i = 100
         roles = {
             'CustomerUser': [Permission.VIEW],
             'CustomerAdmin': [Permission.VIEW, Permission.QUESTION],
@@ -80,6 +81,8 @@ class TcRole(db.Model):
             role.default = (role.name_kr == default)
             role.state = 'Registered'
             role.dtRegistered = datetime.now()
+            role.code = i
+            i += 1
             db.session.add(role)
             role.dtModified = datetime.now()
         db.session.commit()
