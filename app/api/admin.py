@@ -4,6 +4,8 @@ from app import db
 from . import api
 from ..models import *
 from .helper import *
+from itertools import  groupby
+from sqlalchemy import or_
 
 @api.route('/admin/customer/')
 def get_customers():
@@ -135,34 +137,19 @@ def get_user_access():
     })
 
 
-# query.page
+
 @api.route('/admin/blacklist/')
 def all_blacklists():
-    # blacklists = TdBlackList.query.all()
-    # return jsonify({
-    #     'blacklists': [blacklist.to_json() for blacklist in blacklists]
-    # })
-    page = request.args.get('page', 1, type=int)
-    pagination = TdBlackList.query.paginate(page, per_page=20, error_out=False)
-    blacklists = pagination.items
-    prev = None
-    if pagination.has_prev:
-        prev = url_for('api.all_blacklists', page=page-1)
-    next = None
-    if pagination.has_next:
-        next = url_for('api.all_blacklists', page=page+1)
-
+    blacklists = TdBlackList.query.all()
     return jsonify({
-        'blacklists': [bls.to_json() for bls in blacklists],
-        'prev': prev,
-        'next': next,
-        'count': pagination.total
+        'randnums': [black.to_json() for black in blacklists]
     })
+
 
 @api.route('/admin/blacklist/', methods=['POST'])
 def register_blacklist():
     json_data = request.get_json()
-    blacklist = Blacklist(email=json_data['email'],
+    blacklist = TdBlackList(email=json_data['email'],
                           password=json_data['password'],
                           name=json_data['name'])
     db.session.add(blacklist)
@@ -172,7 +159,7 @@ def register_blacklist():
 
 @api.route('/admin/blacklist/<int:id>', methods=['DELETE'])
 def update_blacklist(id):
-    blacklist = Blacklist.query.get_or_404(id)
+    blacklist = TdBlackList.query.get_or_404(id)
     db.sesion.delete(blacklist)
     db.session.commit()
     return jsonify(blacklist.to_json())

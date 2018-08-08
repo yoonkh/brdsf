@@ -333,7 +333,7 @@ class TdCompany(db.Model):
     td_admin1 = db.relationship('TdAdmin', primaryjoin='TdCompany.registrant == TdAdmin.id', backref='tdadmin_td_companies_0')
 
     def to_json(self):
-        json_black_list = {
+        json_td_company = {
             'idx': self.idx,
             'code': self.code,
             'name_kr': self.name_kr,
@@ -362,7 +362,7 @@ class TdCompany(db.Model):
             'description_zh': self.description_zh,
             'tntLogoImgUrl': self.tntLogoImgUrl,
         }
-        return json_black_list
+        return json_td_company
 
 
 class TdDevice(db.Model):
@@ -844,13 +844,15 @@ class TdAdminApp(db.Model):
         }
         return json_cert_report
 
-class LoginTong(db.Model):
-    __tablename__ = 'tl_login_tong'
 
-    idx = db.Column(db.BigInteger, primary_key=True)
-    dtAttempted = db.Column(db.DateTime, nullable=False)
-    role = db.Column(db.String(45), nullable=False)
-    id = db.Column(db.String(20), nullable=False)
-    username = db.Column(db.String(40), nullable=False)
-    resultCode = db.Column(db.String(4), nullable=False)
-    remoteAddr = db.Column(db.String(23), nullable=False)
+
+
+
+
+
+
+
+
+
+
+
