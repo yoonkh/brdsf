@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
@@ -10,6 +11,7 @@ mail = Mail()
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
+cors = CORS()
 
 
 def create_app(config_name=DevelopmentConfig):
@@ -24,5 +26,7 @@ def create_app(config_name=DevelopmentConfig):
 
     from .api import api as api_blueprint
     app.register_blueprint(api_blueprint, url_prefix='/api/v1.0')
+
+    cors.init_app(app, resources={r'/api/*': {'origins': '*'}})
 
     return app

@@ -6,7 +6,6 @@ from app.models import *
 application = create_app()
 app = application
 migrate = Migrate(app, db)
-cors = CORS(app, resources={r'/api/*': {'origins': '*'}})
 
 @app.route('/')
 def index():
