@@ -219,14 +219,13 @@ def get_user_access():
     #     'count': pagination.total
     # })
     start, end = date_range()
-    dates = TlLogin.query.filter(TlLogin.dtAttempted.between(start, end)).order_by(TlLogin.dtAttempted.asc()).all()
+    dates = TlLogin.query.filter(TlLogin.dtAttempted.between(start, end)).order_by(TlLogin.dtAttempted.asc())
     query_data = request.args
     page, search = query_data.get('page', 1), query_data.get('query', '')
     if len(search) > 1:
-        logs = dates.query.filter((TlLogin.id.ilike('%' + search + '%') |
-        (TlLogin.id.has(TdAccount.id.ilike('%' + search + '%')))))
+        logs = dates.filter((TlLogin.id.like('%' + search + '%')))
     else:
-        logs = TlLogin.query
+        logs = dates
     logs = logs.order_by(TlLogin.idx.desc()).paginate(page=int(page), per_page=20, error_out=False)
     return jsonify({'total': logs.total, 'logs': [log.to_json() for log in logs.items]})
 
@@ -332,7 +331,7 @@ def all_randnums():
     query_data = request.args
     page, search = query_data.get('page', 1), query_data.get('query', '')
     if len(search) > 1:
-        rans = TdRandomMnge.query.filter((TdRandomMnge.tagCode.ilike('%' + search + '%')))
+        rans = TdRandomMnge.query.filter((TdRandomMnge.tagCode.like('%' + search + '%')))
         # (TlLogin.id.has(TdAccount.id.ilike('%' + search + '%')))))
     else:
         rans = TdRandomMnge.query
