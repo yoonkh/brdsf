@@ -15,11 +15,10 @@ def all_prods():
 
     # 날짜 range and order
     certs = ThCertification.query.filter(ThCertification.dtCertificate.between(start, end)) \
-            .order_by(ThCertification.dtCertificate.desc())
-            # .filter(ThCertification.companyCode) \
-            # .filter(ThCertification.result) \
-            # .filter(ThCertification.tagType) \
-            # .filter(ThCertification.osType)
+            .filter(ThCertification.companyCode.like('%' + search + '%')) \
+            .filter(ThCertification.result.like('%' + search + '%')) \
+            .filter(ThCertification.tagType.like('%' + search + '%')) \
+            .filter(ThCertification.osType.like('%' + search + '%')).order_by(ThCertification.dtCertificate.desc())
 
     # 각종 조건문 필터
     # 페이지네이션

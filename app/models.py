@@ -210,10 +210,7 @@ class TdAccount(db.Model, UserMixin):
 #         return False
 #
 # login_manager.anonymous_user = AnonymousUser
-#
-# @login_manager.user_loader
-# def load_user(pk_id):
-#     return TdAccount.query.get(int(pk_id))
+
 
 
 class TdAdmin(db.Model):
