@@ -226,7 +226,7 @@ def get_user_access():
         logs = dates.filter((TlLogin.id.like('%' + search + '%')))
     else:
         logs = dates
-    logs = logs.order_by(TlLogin.idx.desc()).paginate(page=int(page), per_page=20, error_out=False)
+    logs = logs.order_by(TlLogin.idx.desc()).paginate(page=int(page), error_out=False)
     return jsonify({'total': logs.total, 'logs': [log.to_json() for log in logs.items]})
 
 
@@ -305,7 +305,7 @@ def get_over_cert():
         # (TsCertReportCount.idx.has(TdAdminApp.pushToken.ilike('%' + search + '%'))))
     else:
         certs = dates
-    certs = certs.order_by(TdDevice.idx.desc()).paginate(page=int(page), per_page=20, error_out=False)
+    certs = certs.order_by(TdDevice.idx.desc()).paginate(page=int(page), error_out=False)
     return jsonify({'total': certs.total, 'certs': [cert.to_json() for cert in certs.items]})
 
 
