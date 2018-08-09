@@ -1,4 +1,4 @@
-from app.api.helper import date_range
+from app.api.helper import date_range, page_and_search
 from ..models import *
 
 from flask import jsonify, request, current_app, url_for, g
@@ -299,14 +299,13 @@ def get_over_cert():
     #     'count': pagination.total
     # })
     start, end = date_range()
-    dates = TsCertReportCount.query.filter(TsCertReportCount.registerDt.between(start, end)).order_by(TsCertReportCount.registerDt.asc()).all()
-    query_data = request.args
-    page, search = query_data.get('page', 1), query_data.get('query', '')
+    dates = TsCertReportCount.query.filter(TsCertReportCount.registerDt.between(start, end)).order_by(TsCertReportCount.registerDt.asc())
+    page, search = page_and_search()
     if len(search) > 1:
-        certs = dates.query.filter((TdAdminApp.pushToken.ilike('%' + search + '%')))
+        certs = dates.all().query.filter((TdAdminApp.pushToken.ilike('%' + search + '%')))
         # (TsCertReportCount.idx.has(TdAdminApp.pushToken.ilike('%' + search + '%')))))
     else:
-        certs = TsCertReportCount.query
+        certs = dates
     certs = certs.order_by(TsCertReportCount.idx.desc()).paginate(page=int(page), per_page=20, error_out=False)
     return jsonify({'total': certs.total, 'certs': [cert.to_json() for cert in certs.items]})
 
