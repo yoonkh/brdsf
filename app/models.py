@@ -509,6 +509,32 @@ class TdDevice(db.Model):
     td_service_term = db.relationship('TdServiceTerm', primaryjoin='TdDevice.serviceTermVersion == TdServiceTerm.version', backref='td_devices')
 
 
+    def to_json(self):
+        json_device = {
+            'idx': self.idx,
+            'pushToken': self.pushToken,
+            'model': self.model,
+            'osVersion': self.osVersion,
+            'appVersion': self.appVersion,
+            'appCode': self.appCode,
+            'appTagType': self.appTagType,
+            'agreeTerm': self.agreeTerm,
+            'agreeGPS': self.agreeGPS,
+            'useBackground': self.useBackground,
+            'language': self.language,
+            'languageCode': self.languageCode,
+            'serverName': self.serverName,
+            'state': self.state,
+            'dtRegistered': self.dtRegistered,
+            'dtLastConnected': self.dtLastConnected,
+            'dtTermAgreement': self.dtTermAgreement,
+            'serviceTermVersion': self.serviceTermVersion,
+            'locationTermVersion': self.locationTermVersion,
+            'ipAddr': self.ipAddr
+        }
+        return json_device
+
+
 class TdHolotag(db.Model):
     __tablename__ = 'td_holotag'
     __table_args__ = (
