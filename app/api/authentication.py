@@ -1,6 +1,5 @@
 from flask import g, jsonify
 from flask_httpauth import HTTPBasicAuth
-# from ..models import User
 from app.models import TdAccount
 from . import api
 from .errors import unauthorized, forbidden
@@ -21,7 +20,6 @@ def verify_password(email_or_token, password):
         return False
     g.current_user = user
     g.token_used = False
-    print(g.current_user)
     return user.verify_password(password)
 
 

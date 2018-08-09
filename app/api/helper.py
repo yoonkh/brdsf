@@ -2,8 +2,8 @@ from datetime import *
 from dateutil.relativedelta import relativedelta
 from flask import request
 # from itertools import groupby
-from datetime import *
-from dateutil.relativedelta import relativedelta
+from datetime import datetime
+from dateutil.relativedelta import *
 
 
 def date_range():
@@ -11,8 +11,8 @@ def date_range():
     query_data = request.args
     start, end = query_data.get('start'), query_data.get('end')
 
-    start_date = datetime.strptime(start, '%Y-%m-%d').date() if start is not None else datetime.min
-    end_date = datetime.strptime(end, '%Y-%m-%d').date() if end is not None else datetime.max
+    start_date = datetime.strptime(start, '%Y-%m-%d').date() if start is not None else datetime.today() - relativedelta(weeks=1)
+    end_date = datetime.strptime(end, '%Y-%m-%d').date() if end is not None else datetime.today()
 
     return start_date, end_date
 

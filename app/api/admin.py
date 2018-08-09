@@ -1,4 +1,4 @@
-from app.api.helper import date_range
+from app.api.helper import date_range, page_and_search
 from ..models import *
 
 from flask import jsonify, request, current_app, url_for, g
@@ -219,14 +219,13 @@ def get_user_access():
     #     'count': pagination.total
     # })
     start, end = date_range()
-    dates = TlLogin.query.filter(TlLogin.dtAttempted.between(start, end)).order_by(TlLogin.dtAttempted.asc()).all()
+    dates = TlLogin.query.filter(TlLogin.dtAttempted.between(start, end)).order_by(TlLogin.dtAttempted.asc())
     query_data = request.args
     page, search = query_data.get('page', 1), query_data.get('query', '')
     if len(search) > 1:
-        logs = dates.query.filter((TlLogin.id.ilike('%' + search + '%') |
-        (TlLogin.id.has(TdAccount.id.ilike('%' + search + '%')))))
+        logs = dates.filter((TlLogin.id.like('%' + search + '%')))
     else:
-        logs = TlLogin.query
+        logs = dates
     logs = logs.order_by(TlLogin.idx.desc()).paginate(page=int(page), per_page=20, error_out=False)
     return jsonify({'total': logs.total, 'logs': [log.to_json() for log in logs.items]})
 
@@ -299,15 +298,14 @@ def get_over_cert():
     #     'count': pagination.total
     # })
     start, end = date_range()
-    dates = TsCertReportCount.query.filter(TsCertReportCount.registerDt.between(start, end)).order_by(TsCertReportCount.registerDt.asc()).all()
-    query_data = request.args
-    page, search = query_data.get('page', 1), query_data.get('query', '')
+    dates = TdDevice.query.filter(TdDevice.dtRegistered.between(start, end)).order_by(TdDevice.dtRegistered.asc())
+    page, search = page_and_search()
     if len(search) > 1:
-        certs = dates.query.filter((TdAdminApp.pushToken.ilike('%' + search + '%')))
-        # (TsCertReportCount.idx.has(TdAdminApp.pushToken.ilike('%' + search + '%')))))
+        certs = dates.filter((TdDevice.pushToken.ilike('%' + search + '%')))
+        # (TsCertReportCount.idx.has(TdAdminApp.pushToken.ilike('%' + search + '%'))))
     else:
-        certs = TsCertReportCount.query
-    certs = certs.order_by(TsCertReportCount.idx.desc()).paginate(page=int(page), per_page=20, error_out=False)
+        certs = dates
+    certs = certs.order_by(TdDevice.idx.desc()).paginate(page=int(page), per_page=20, error_out=False)
     return jsonify({'total': certs.total, 'certs': [cert.to_json() for cert in certs.items]})
 
 
@@ -333,7 +331,7 @@ def all_randnums():
     query_data = request.args
     page, search = query_data.get('page', 1), query_data.get('query', '')
     if len(search) > 1:
-        rans = TdRandomMnge.query.filter((TdRandomMnge.tagCode.ilike('%' + search + '%')))
+        rans = TdRandomMnge.query.filter((TdRandomMnge.tagCode.like('%' + search + '%')))
         # (TlLogin.id.has(TdAccount.id.ilike('%' + search + '%')))))
     else:
         rans = TdRandomMnge.query
