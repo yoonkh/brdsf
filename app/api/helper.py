@@ -1,6 +1,6 @@
 from datetime import *
 from dateutil.relativedelta import relativedelta
-from flask import request
+from flask import request, app, current_app
 # from itertools import groupby
 from datetime import datetime
 from dateutil.relativedelta import *
@@ -95,3 +95,11 @@ def static_date_range():
     start = datetime.now() - relativedelta(days=10, months=1)
 
     return start, end
+
+
+def allowed_file(filename):
+
+    ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif', 'txt'])
+
+    return '.' in filename and \
+             filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS

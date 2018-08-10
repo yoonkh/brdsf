@@ -1,6 +1,11 @@
-from flask import jsonify, request
+import os
 
+from flask import jsonify, request, flash, url_for, app, current_app
+from werkzeug.utils import secure_filename, redirect
+
+import config
 from app import db
+from app.api.helper import allowed_file
 from app.models import TdCompany
 from . import api
 
@@ -15,7 +20,19 @@ def all_customers():
 
 @api.route('/company/', methods=['POST'])
 def register_customer():
-    json_data = request.get_json()
+
+    file = request.files['ci']
+
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+
+        return redirect(url_for('api.register_customer',
+                                filename=filename))
+
+    json_data = request.form.to_dict()
+
     cp = TdCompany(code=json_data['code'],
                    name_kr=json_data['name_kr'],
                    name_en=json_data['name_en'],
@@ -34,7 +51,7 @@ def register_customer():
                    dtRegistered=json_data['dtRegistered'],
                    dtModified=json_data['dtModified'],
                    note=json_data['note'],
-                   ci=json_data['ci'],
+                   # ci=file,
                    url=json_data['url'],
                    description_kr=json_data['description_kr'],
                    description_en=json_data['description_en'],
@@ -42,6 +59,23 @@ def register_customer():
                    tntLogoImgUrl=json_data['tntLogoImgUrl'],
                    registrant=json_data['registrant'],
                    modifier=json_data['modifier'])
+    cp.ci = file.filename
+
+    print(cp.ci)
+    # if 'ci' not in request.files:
+    #     flash('No file part')
+    #     return redirect(request.url)
+
+    print('test')
+    # if user does not select file, browser also
+    # submit an empty part without filename
+    # if file.filename == '':
+    #     flash('No selected file')
+    #     return redirect(request.url)
+    # print('test1')
+
+
+    print('test2')
     db.session.add(cp)
     db.session.commit()
     return jsonify({'result': 'success'})
