@@ -1,12 +1,10 @@
 from flask_migrate import Migrate
-from flask_cors import CORS
 from app import create_app, db
 from app.models import *
 
 application = create_app()
 app = application
 migrate = Migrate(app, db)
-cors = CORS(app, resources={r'/api/*': {'origins': '*'}})
 
 @app.route('/')
 def index():

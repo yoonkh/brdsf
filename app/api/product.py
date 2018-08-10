@@ -1,5 +1,7 @@
 from flask import jsonify, request, current_app, url_for
+from sqlalchemy import and_
 
+from app.api.helper import date_range, page_and_search
 from app.models import ThCertification
 from . import api
 
@@ -7,23 +9,22 @@ from . import api
 # query.page
 @api.route('/prod-cert/')
 def all_prods():
-    # page = request.args.get('page', 1, type=int)
-    paginations = ThCertification.query.limit(10).all()
-    # prods = pagination.items
-    # prev = None
-    # if pagination.has_prev:
-    #     prev = url_for('api.all_prods', page=page-1)
-    # next = None
-    # if pagination.has_next:
-    #     next = url_for('api.all_prods', page=page+1)
+    start, end = date_range()
+    print(start, end)
+    page, search = page_and_search()
 
-    return jsonify({
-        'prods': [pagination.to_json for pagination in paginations]
-        #     [prod.to_json() for prod in prods],
-        # 'prev': prev,
-        # 'next': next,
-        # 'count': pagination.total
-    })
+    # 날짜 range and order
+    certs = ThCertification.query.filter(ThCertification.dtCertificate.between(start, end)) \
+            .filter(ThCertification.companyCode.like('%' + search + '%')) \
+            .filter(ThCertification.result.like('%' + search + '%')) \
+            .filter(ThCertification.tagType.like('%' + search + '%')) \
+            .filter(ThCertification.osType.like('%' + search + '%')).order_by(ThCertification.dtCertificate.desc())
+
+    # 각종 조건문 필터
+    # 페이지네이션
+    certs = certs.paginate(page=int(page), per_page=20, error_out=False).items
+    # return jsonify({'total': certs.total, 'certs': [cert.to_json() for cert in certs]})
+    return jsonify({'certs': [cert.to_json() for cert in certs]})
 
 
 @api.route('/prod-cert/<int:id>')
