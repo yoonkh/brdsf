@@ -24,14 +24,14 @@ def register_customer():
     # file = request.files['ci']
 
     # json_data = request.form.to_dict()
-    json_data = request.json_get()
+    json_data = request.get_json()
 
     cp = TdCompany(code=json_data['code'],
                    name_kr=json_data['name_kr'],
                    name_en=json_data['name_en'],
                    name_zh=json_data['name_zh'],
                    registrationNumber=json_data['registrationNumber'],
-                   # businessRegistrationUrl=file,
+                   businessRegistrationUrl=json_data['businessRegistrationUrl'],
                    addr_kr=json_data['addr_kr'],
                    addr_en=json_data['addr_en'],
                    addr_zh=json_data['addr_zh'],
@@ -44,12 +44,12 @@ def register_customer():
                    dtRegistered=json_data['dtRegistered'],
                    dtModified=json_data['dtModified'],
                    note=json_data['note'],
-                   # ci=file,
+                   ci=json_data['ci'],
                    url=json_data['url'],
                    description_kr=json_data['description_kr'],
                    description_en=json_data['description_en'],
                    description_zh=json_data['description_zh'],
-                   # tntLogoImgUrl=file,
+                   tntLogoImgUrl=json_data['tntLogoImgUrl'],
                    registrant=json_data['registrant'],
                    modifier=json_data['modifier'])
 
