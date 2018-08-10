@@ -17,15 +17,15 @@ def date_range():
 
 def cert_date_range():
 
-    end = datetime.now() - relativedelta(days=10)
-    start = datetime.now() - relativedelta(hours=8, days=10)
+    end = datetime.now() - relativedelta()
+    start = datetime.now() - relativedelta(hours=8)
 
     return start, end
 
 def static_date_range():
 
     end = datetime.now()
-    start = datetime.now() - relativedelta(days=10, months=1)
+    start = datetime.now() - relativedelta(months=1)
 
     return start, end
 
@@ -36,3 +36,8 @@ def allowed_file(filename):
 
     return '.' in filename and \
              filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+def page_and_search():
+    query_data = request.args
+    page, search = query_data.get('page', 1), query_data.get('query', '')
+    return page, search
