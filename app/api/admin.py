@@ -298,14 +298,14 @@ def get_over_cert():
     #     'count': pagination.total
     # })
     start, end = date_range()
-    dates = TdDevice.query.filter(TdDevice.dtRegistered.between(start, end)).order_by(TdDevice.dtRegistered.asc())
+    dates = ThCertification.query.filter(ThCertification.dtCertificate.between(start, end)).order_by(ThCertification.dtCertificate.asc())
     page, search = page_and_search()
     if len(search) > 1:
-        certs = dates.filter((TdDevice.pushToken.ilike('%' + search + '%')))
+        certs = dates.filter((ThCertification.deviceID.ilike('%' + search + '%')))
         # (TsCertReportCount.idx.has(TdAdminApp.pushToken.ilike('%' + search + '%'))))
     else:
         certs = dates
-    certs = certs.order_by(TdDevice.idx.desc()).all()
+    certs = certs.order_by(ThCertification.idx.desc()).all()
 
     return jsonify({'total': len(certs), 'certs': [cert.to_json() for cert in certs]})
 

@@ -399,9 +399,6 @@ class TdBlackList(db.Model):
     modifier = db.Column(db.String(50), nullable=False)
 
     def to_json(self):
-        # u = ThCertification.query.filter_by(deviceID=self.pushToken).first()
-        # print(u.companyCode)
-        # user = TdApp.query.filter_by(companyCode=u.companyCode).first()
         json_black_list = {
             'idx': self.idx,
             'pushToken': self.pushToken,
@@ -410,9 +407,7 @@ class TdBlackList(db.Model):
             'dtRegistered': self.dtRegistered,
             'registrant': self.registrant,
             'dtModified': self.dtModified,
-            'modifier': self.modifier,
-            # 'tag_type': ThCertification.query.filter_by(deviceID=self.pushToken).first(),
-            # 'app_name': user.name_kr,
+            'modifier': self.modifier
         }
         return json_black_list
 
@@ -627,6 +622,7 @@ class TdRetailer(db.Model):
             'name_en': self.name_en,
             'name_zh': self.name_zh,
             'companyCode': self.companyCode,
+            'company': TdCompany.query.filter_by(code=self.companyCode).first().name_kr,
             'state': self.state,
             'note': self.note,
             'headerquarterYN': self.headerquarterYN,

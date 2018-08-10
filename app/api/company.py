@@ -25,6 +25,7 @@ def register_customer():
 
     # json_data = request.form.to_dict()
     json_data = request.json_get()
+
     cp = TdCompany(code=json_data['code'],
                    name_kr=json_data['name_kr'],
                    name_en=json_data['name_en'],
