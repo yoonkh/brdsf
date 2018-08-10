@@ -818,24 +818,17 @@ class TlLogin(db.Model):
     remoteAddr = db.Column(db.String(23), nullable=False)
 
     def to_json(self):
-        json_apps = {
-            'idx': self.idx,
-            'id': self.id,
-            'resultCode': self.resultCode,
-            'dtAttempted': self.dtAttempted,
-            'remoteAddr': self.remoteAddr,
-        }
-        return json_apps
 
-
-
-    def to_json(self):
+        u = TdAdmin.query.filter_by(id=self.id).first()
+        print(u)
         json_login = {
             'idx': self.idx,
             'id': self.id,
             'resultCode': self.resultCode,
             'dtAttempted': self.dtAttempted,
-            'remoteAddr': self.remoteAddr
+            'remoteAddr': self.remoteAddr,
+            'role_name': TcRole.query.filter_by(code=u.role).first().name_kr,
+            'name': u.name
         }
         return json_login
 

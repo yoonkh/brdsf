@@ -23,14 +23,6 @@ def register_customer():
 
     file = request.files['ci']
 
-
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-
-        return redirect(url_for('api.register_customer',
-                                filename=filename))
-
     json_data = request.form.to_dict()
 
     cp = TdCompany(code=json_data['code'],
@@ -38,7 +30,7 @@ def register_customer():
                    name_en=json_data['name_en'],
                    name_zh=json_data['name_zh'],
                    registrationNumber=json_data['registrationNumber'],
-                   businessRegistrationUrl=json_data['businessRegistrationUrl'],
+                   businessRegistrationUrl=file,
                    addr_kr=json_data['addr_kr'],
                    addr_en=json_data['addr_en'],
                    addr_zh=json_data['addr_zh'],
@@ -51,31 +43,20 @@ def register_customer():
                    dtRegistered=json_data['dtRegistered'],
                    dtModified=json_data['dtModified'],
                    note=json_data['note'],
-                   # ci=file,
+                   ci=file,
                    url=json_data['url'],
                    description_kr=json_data['description_kr'],
                    description_en=json_data['description_en'],
                    description_zh=json_data['description_zh'],
-                   tntLogoImgUrl=json_data['tntLogoImgUrl'],
+                   tntLogoImgUrl=file,
                    registrant=json_data['registrant'],
                    modifier=json_data['modifier'])
-    cp.ci = file.filename
 
-    print(cp.ci)
-    # if 'ci' not in request.files:
-    #     flash('No file part')
-    #     return redirect(request.url)
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+        path = current_app.config['UPLOAD_FOLDER']+filename
 
-    print('test')
-    # if user does not select file, browser also
-    # submit an empty part without filename
-    # if file.filename == '':
-    #     flash('No selected file')
-    #     return redirect(request.url)
-    # print('test1')
-
-
-    print('test2')
     db.session.add(cp)
     db.session.commit()
     return jsonify({'result': 'success'})
