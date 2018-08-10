@@ -212,7 +212,6 @@ class TdAccount(db.Model, UserMixin):
 # login_manager.anonymous_user = AnonymousUser
 
 
-
 class TdAdmin(db.Model):
     __tablename__ = 'td_admin'
 
@@ -245,6 +244,7 @@ class TdAdmin(db.Model):
             'phone': self.phone,
             'telephone': self.telephone,
             'role': self.role,
+            'role_name': TcRole.query.filter_by(code=self.role).first().name_kr,
             'position': self.position,
             'department': self.department,
             'state': self.state,
@@ -399,6 +399,9 @@ class TdBlackList(db.Model):
     modifier = db.Column(db.String(50), nullable=False)
 
     def to_json(self):
+        # u = ThCertification.query.filter_by(deviceID=self.pushToken).first()
+        # print(u.companyCode)
+        # user = TdApp.query.filter_by(companyCode=u.companyCode).first()
         json_black_list = {
             'idx': self.idx,
             'pushToken': self.pushToken,
@@ -407,7 +410,9 @@ class TdBlackList(db.Model):
             'dtRegistered': self.dtRegistered,
             'registrant': self.registrant,
             'dtModified': self.dtModified,
-            'modifier': self.modifier
+            'modifier': self.modifier,
+            # 'tag_type': ThCertification.query.filter_by(deviceID=self.pushToken).first(),
+            # 'app_name': user.name_kr,
         }
         return json_black_list
 

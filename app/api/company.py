@@ -21,16 +21,16 @@ def all_customers():
 @api.route('/company/', methods=['POST'])
 def register_customer():
 
-    file = request.files['ci']
+    # file = request.files['ci']
 
-    json_data = request.form.to_dict()
-
+    # json_data = request.form.to_dict()
+    json_data = request.json_get()
     cp = TdCompany(code=json_data['code'],
                    name_kr=json_data['name_kr'],
                    name_en=json_data['name_en'],
                    name_zh=json_data['name_zh'],
                    registrationNumber=json_data['registrationNumber'],
-                   businessRegistrationUrl=file,
+                   # businessRegistrationUrl=file,
                    addr_kr=json_data['addr_kr'],
                    addr_en=json_data['addr_en'],
                    addr_zh=json_data['addr_zh'],
@@ -43,19 +43,19 @@ def register_customer():
                    dtRegistered=json_data['dtRegistered'],
                    dtModified=json_data['dtModified'],
                    note=json_data['note'],
-                   ci=file,
+                   # ci=file,
                    url=json_data['url'],
                    description_kr=json_data['description_kr'],
                    description_en=json_data['description_en'],
                    description_zh=json_data['description_zh'],
-                   tntLogoImgUrl=file,
+                   # tntLogoImgUrl=file,
                    registrant=json_data['registrant'],
                    modifier=json_data['modifier'])
 
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-        path = current_app.config['UPLOAD_FOLDER']+filename
+    # if file and allowed_file(file.filename):
+    #     filename = secure_filename(file.filename)
+    #     file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+    #     path = current_app.config['UPLOAD_FOLDER']+filename
 
     db.session.add(cp)
     db.session.commit()

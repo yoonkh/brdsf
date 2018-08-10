@@ -127,10 +127,10 @@ def change_role(id):
 
 @api.route('/admin/icrf-users/')
 def all_icrf_users():
-   icrfs = TdAdmin.query.all()
-   return jsonify({
-       'icrf-users': [icrf.to_json() for icrf in icrfs]
-   })
+    icrfs = TdAdmin.query.all()
+    return jsonify({
+        'icrf-users': [icrf.to_json() for icrf in icrfs]
+    })
 
 @api.route('/admin/icrf-users/', methods=['POST'])
 def register_icrf_user():
