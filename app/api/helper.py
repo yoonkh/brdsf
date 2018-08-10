@@ -17,15 +17,15 @@ def date_range():
 
 def cert_date_range():
 
-    end = datetime.now() - relativedelta()
-    start = datetime.now() - relativedelta(hours=8)
+    end = datetime.now() - relativedelta(months=1)
+    start = datetime.now() - relativedelta(hours=8, months=1)
 
     return start, end
 
 def static_date_range():
 
-    end = datetime.now()
-    start = datetime.now() - relativedelta(months=1)
+    end = datetime.now()- relativedelta(months=1)
+    start = datetime.now() - relativedelta(months=2)
 
     return start, end
 
