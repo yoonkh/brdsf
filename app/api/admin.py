@@ -512,23 +512,22 @@ def update_distributor(id):
 @api.route('/admin/distributor/<int:id>', methods=['DELETE'])
 def delete_distributor(id):
     dist = TdRetailer.query.filter_by(idx=id).first()
+    if dist.state is 'Registered':
+        dist.state = 'Deleted'
+        db.session.add(dist)
+        db.session.commit()
+        response = {'result': 'success'}
 
-    # if dist.state is 'Registered':
-    #     dist.state = 'Deleted'
-    #     db.session.add(dist)
-    #     db.session.commit()
-    #     response = {'result': 'success'}
-    #
-    # else:
-    #     response = {'result': 'already deleted'}
-    #
-    # return jsonify(response)
+    else:
+        response = {'result': 'already deleted'}
 
-    db.session.delete(dist)
-    db.session.commit()
-    return jsonify({
-        'result': 'success'
-    })
+    return jsonify(response)
+
+    # db.session.delete(dist)
+    # db.session.commit()
+    # return jsonify({
+    #     'result': 'success'
+    # })
 
 
 @api.route('/admin/tag-type/')
