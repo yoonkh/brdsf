@@ -730,6 +730,7 @@ class ThCertification(db.Model):
             'image': self.image,
             'result': self.result,
             'resultDetail': self.resultDetail,
+            'company_name': TdCompany.query.filter_by(code=self.companyCode).first().name_kr,
             'osType': self.osType,
             'dtCertificate': self.dtCertificate,
             'longitude': self.longitude,
