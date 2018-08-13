@@ -278,6 +278,12 @@ def update_blacklist(id):
     return jsonify(blacklist.to_json())
 
 
+@api.route('/admin/blacklist/<int:id>')
+def get_blacklist(id):
+    blacklist = TdBlackList.query.get_or_404(id)
+    return jsonify(blacklist.to_json())
+
+
 # over-cert.query.page 추가해야함
 @api.route('/admin/over-cert/')
 def get_over_cert():
