@@ -99,3 +99,13 @@ def update_customer(id):
     db.session.commit()
 
     return jsonify({'result': 'success'})
+
+
+@api.route('/company/<int:id>', methods=['DELETE'])
+def delete_customer(id):
+    cp = TdCompany.query.get_or_404(id)
+    db.session.delete(cp)
+    db.session.commit()
+    return jsonify({
+        'result': 'success'
+    })
