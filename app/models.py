@@ -718,6 +718,15 @@ class ThCertification(db.Model):
     td_company = db.relationship('TdCompany', primaryjoin='ThCertification.companyCode == TdCompany.code', backref='th_certifications')
     td_tag_version = db.relationship('TdTagVersion', primaryjoin='ThCertification.hVersion == TdTagVersion.version', backref='th_certifications')
 
+
+    def tag_code(self):
+        t = TdHolotag.query.filter_by(code=self.tagCode).first()
+        if t:
+            t_name = t.name_kr
+            return t_name
+        else:
+            pass
+
     def to_json(self):
         json_cert = {
             'idx': self.idx,
@@ -731,6 +740,7 @@ class ThCertification(db.Model):
             'result': self.result,
             'resultDetail': self.resultDetail,
             'company_name': TdCompany.query.filter_by(code=self.companyCode).first().name_kr,
+            'tag_name': self.tag_code(),
             'osType': self.osType,
             'dtCertificate': self.dtCertificate,
             'longitude': self.longitude,
