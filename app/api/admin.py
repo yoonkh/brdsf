@@ -272,10 +272,24 @@ def register_blacklist():
 
 @api.route('/admin/blacklist/<int:id>', methods=['DELETE'])
 def update_blacklist(id):
-    blacklist = TdBlackList.query.get_or_404(id)
-    db.sesion.delete(blacklist)
+    blacklist = TdBlackList.query.filter_by(idx=id).first()
+
+    # if blacklist.delYN is 'N':
+    #     blacklist.delYN = 'Y'
+    #     db.session.add(blacklist)
+    #     db.session.commit()
+    #     response = {'result': 'success'}
+    #
+    # else:
+    #     response = {'result': 'already deleted'}
+    #
+    # return jsonify(response)
+
+    db.session.delete(blacklist)
     db.session.commit()
-    return jsonify(blacklist.to_json())
+    return jsonify({
+        'result': 'success'
+    })
 
 
 @api.route('/admin/blacklist/<int:id>')
@@ -497,10 +511,24 @@ def update_distributor(id):
 
 @api.route('/admin/distributor/<int:id>', methods=['DELETE'])
 def delete_distributor(id):
-    distributor = TdRetailer.query.get_or_404(id)
-    db.session.delete(distributor)
+    dist = TdRetailer.query.filter_by(idx=id).first()
+
+    # if dist.state is 'Registered':
+    #     dist.state = 'Deleted'
+    #     db.session.add(dist)
+    #     db.session.commit()
+    #     response = {'result': 'success'}
+    #
+    # else:
+    #     response = {'result': 'already deleted'}
+    #
+    # return jsonify(response)
+
+    db.session.delete(dist)
     db.session.commit()
-    return jsonify({'result': 'success'})
+    return jsonify({
+        'result': 'success'
+    })
 
 
 @api.route('/admin/tag-type/')
