@@ -23,7 +23,7 @@ def all_prods():
 
     # 각종 조건문 필터
     # 페이지네이션
-    certs = certs.paginate(page=int(page), per_page=per_page, error_out=False).items
+    certs = certs.paginate(page=int(page), per_page=int(per_page), error_out=False).items
     # return jsonify({'total': certs.total, 'certs': [cert.to_json() for cert in certs]})
     return jsonify({'certs': [cert.to_json() for cert in certs]})
 
