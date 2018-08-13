@@ -25,7 +25,7 @@ def all_prods():
     # 페이지네이션
     certs = certs.paginate(page=int(page), per_page=int(per_page), error_out=False).items
     # return jsonify({'total': certs.total, 'certs': [cert.to_json() for cert in certs]})
-    return jsonify({'certs': [cert.to_json() for cert in certs]})
+    return jsonify({'total': len(certs), 'certs': [cert.to_json() for cert in certs]})
 
 
 @api.route('/prod-cert/<int:id>')
