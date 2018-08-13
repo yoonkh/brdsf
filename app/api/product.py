@@ -23,9 +23,10 @@ def all_prods():
 
     # 각종 조건문 필터
     # 페이지네이션
-    certs = certs.paginate(page=int(page), per_page=int(per_page), error_out=False).items
+    pagination = certs.paginate(page=int(page), per_page=int(per_page), error_out=False)
+    certs = pagination.items
     # return jsonify({'total': certs.total, 'certs': [cert.to_json() for cert in certs]})
-    return jsonify({'total': len(certs), 'certs': [cert.to_json() for cert in certs]})
+    return jsonify({'total': pagination.total, 'certs': [cert.to_json() for cert in certs]})
 
 
 @api.route('/prod-cert/<int:id>')
