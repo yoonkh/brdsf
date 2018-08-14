@@ -234,6 +234,13 @@ class TdAdmin(db.Model):
     note = db.Column(db.Text)
     failCount = db.Column(db.SmallInteger, server_default=db.FetchedValue())
 
+    def login_log(self):
+        u = TlLogin.query.filter_by(id=self.id).first()
+        if u:
+            self.dtLastConnected = u.dtAttempted
+            u = TdAdmin.query.filter_by(dtLastConnected=self.dtLastConnected).first()
+            return u.dtLastConnected
+
     def to_json(self):
         json_user = {
             'idx': self.idx,
@@ -252,7 +259,7 @@ class TdAdmin(db.Model):
             'dtRegistered': self.dtRegistered,
             'modifier': self.modifier,
             'dtModified': self.dtModified,
-            'dtLastConnected': self.dtLastConnected,
+            'dtLastConnected': self.login_log(),
             'note': self.note,
             'failCount': self.failCount
         }

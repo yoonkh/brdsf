@@ -132,6 +132,7 @@ def all_icrf_users():
         'icrf-users': [icrf.to_json() for icrf in icrfs]
     })
 
+
 @api.route('/admin/icrf-users/', methods=['POST'])
 def register_icrf_user():
     json_data = request.get_json()
