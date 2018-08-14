@@ -274,22 +274,22 @@ def register_blacklist():
 def update_blacklist(id):
     blacklist = TdBlackList.query.filter_by(idx=id).first()
 
-    # if blacklist.delYN is 'N':
-    #     blacklist.delYN = 'Y'
-    #     db.session.add(blacklist)
-    #     db.session.commit()
-    #     response = {'result': 'success'}
-    #
-    # else:
-    #     response = {'result': 'already deleted'}
-    #
-    # return jsonify(response)
+    if blacklist.delYN is 'N':
+        blacklist.delYN = 'Y'
+        db.session.add(blacklist)
+        db.session.commit()
+        response = {'result': 'success'}
 
-    db.session.delete(blacklist)
-    db.session.commit()
-    return jsonify({
-        'result': 'success'
-    })
+    else:
+        response = {'result': 'already deleted'}
+
+    return jsonify(response)
+
+    # db.session.delete(blacklist)
+    # db.session.commit()
+    # return jsonify({
+    #     'result': 'success'
+    # })
 
 
 @api.route('/admin/blacklist/<int:id>')
