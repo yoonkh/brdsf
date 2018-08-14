@@ -234,13 +234,6 @@ class TdAdmin(db.Model):
     note = db.Column(db.Text)
     failCount = db.Column(db.SmallInteger, server_default=db.FetchedValue())
 
-    def login_log(self):
-        u = TlLogin.query.filter_by(id=self.id).first()
-        if u:
-            self.dtLastConnected = u.dtAttempted
-            u = TdAdmin.query.filter_by(dtLastConnected=self.dtLastConnected).first()
-            return u.dtLastConnected
-
     def to_json(self):
         json_user = {
             'idx': self.idx,
@@ -752,9 +745,9 @@ class ThCertification(db.Model):
             'image': self.image,
             'result': self.result,
             'resultDetail': self.resultDetail,
-            'company_name': self.company_name(),
-            'tag_name': self.tag_code(),
-            'distributor': self.distributor(),
+            'company_name': self.get_company_name(),
+            'tag_name': self.get_tag_code(),
+            'distributor': self.get_distributor(),
             'osType': self.osType,
             'dtCertificate': self.dtCertificate,
             'longitude': self.longitude,
