@@ -319,7 +319,9 @@ def get_over_cert():
     #     'count': pagination.total
     # })
     start, end = date_range()
-    dates = ThCertification.query.filter(ThCertification.dtCertificate.between(start, end)).order_by(ThCertification.dtCertificate.asc())
+    dates = ThCertification.query.filter(ThCertification.dtCertificate.between(start, end)) \
+                                 .filter_by(result='OverCert') \
+                                 .order_by(ThCertification.dtCertificate.asc())
     page, search = page_and_search()
     if len(search) > 1:
         certs = dates.filter((ThCertification.deviceID.ilike('%' + search + '%')))
