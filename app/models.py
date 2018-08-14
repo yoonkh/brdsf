@@ -725,10 +725,20 @@ class ThCertification(db.Model):
     td_company = db.relationship('TdCompany', primaryjoin='ThCertification.companyCode == TdCompany.code', backref='th_certifications')
     td_tag_version = db.relationship('TdTagVersion', primaryjoin='ThCertification.hVersion == TdTagVersion.version', backref='th_certifications')
 
-    def tag_code(self):
+    def get_tag_code(self):
         t = TdHolotag.query.filter_by(code=self.tagCode).first()
         if t:
             return t.name_kr
+
+    def get_company_name(self):
+        u = TdCompany.query.filter_by(code=self.companyCode).first()
+        if u:
+            return u.name_kr
+
+    def get_distributor(self):
+        u = TdRetailer.query.filter_by(companyCode=self.companyCode).first()
+        if u:
+            return u.name_kr
 
     def to_json(self):
         json_cert = {
@@ -742,9 +752,9 @@ class ThCertification(db.Model):
             'image': self.image,
             'result': self.result,
             'resultDetail': self.resultDetail,
-            'company_name': TdCompany.query.filter_by(code=self.companyCode).first().name_kr,
+            'company_name': self.company_name(),
             'tag_name': self.tag_code(),
-            'distributor': TdRetailer.query.filter_by(companyCode=self.companyCode).first().name_kr,
+            'distributor': self.distributor(),
             'osType': self.osType,
             'dtCertificate': self.dtCertificate,
             'longitude': self.longitude,
@@ -836,7 +846,6 @@ class TlLogin(db.Model):
     def to_json(self):
 
         u = TdAdmin.query.filter_by(id=self.id).first()
-        print(u)
         json_login = {
             'idx': self.idx,
             'id': self.id,
