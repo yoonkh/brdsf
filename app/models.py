@@ -348,6 +348,7 @@ class TdApp(db.Model):
             'type': self.type,
             'tagType': self.tagType,
             'companyCode': self.companyCode,
+            'company_name': TdCompany.query.filter_by(code=self.companyCode).first().name_kr,
             'registrant': self.registrant,
             'dtRegistered': self.dtRegistered,
             'modifier': self.modifier,
