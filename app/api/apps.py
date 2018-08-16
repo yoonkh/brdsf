@@ -57,6 +57,7 @@ def update_app(id):
     json_data = request.get_json()
     app = TdApp.query.get_or_404(id)
 
+    app.code = json_data.get('code') or app.code
     app.companyCode = json_data.get('companyCode') or app.companyCode
     app.registrant = json_data.get('registrant') or app.registrant
     app.name_kr = json_data.get('name_kr') or app.name_kr
@@ -76,6 +77,7 @@ def update_app(id):
     app.limitCertHour = json_data.get('limitCertHour') or app.limitCertHour
     app.limitCertCnt = json_data.get('limitCertCnt') or app.limitCertCnt
     app.updateUrl = json_data.get('updateUrl') or app.updateUrl
+    app.state = json_data.get('state') or app.state
 
     db.session.add(app)
     db.session.commit()
