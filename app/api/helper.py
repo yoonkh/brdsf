@@ -9,13 +9,11 @@ def date_range():
 
     query_data = request.args
     start, end = query_data.get('start'), query_data.get('end')
-    s = datetime.today() - relativedelta(months=3)
-    e = datetime.today()
-    s_defult = datetime.strftime(s, '%Y-%m-%d')
-    e_defult = datetime.strftime(e, '%Y-%m-%d')
+    s_default = datetime.today() - relativedelta(months=3)
+    e_default = datetime.today()
 
-    start_date = datetime.strptime(start, '%Y-%m-%d').date() if start is not None else s_defult
-    end_date = datetime.strptime(end, '%Y-%m-%d').date() if end is not None else e_defult
+    start_date = datetime.strptime(start, '%Y-%m-%d').date() if start is not None else s_default
+    end_date = datetime.strptime(end, '%Y-%m-%d').date() if end is not None else e_default
 
     return start_date, end_date
 
