@@ -20,7 +20,8 @@ def all_apps():
 def register_app():
     json_data = request.get_json()
 
-    app = TdApp(companyCode=json_data['companyCode'],
+    app = TdApp(code=json_data['code'],
+                companyCode=json_data['companyCode'],
                 registrant=json_data['registrant'],
                 name_kr=json_data['name_kr'],
                 name_en=json_data['name_en'],
