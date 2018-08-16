@@ -447,7 +447,6 @@ class TdCompany(db.Model):
     td_admin = db.relationship('TdAdmin', primaryjoin='TdCompany.modifier == TdAdmin.id', backref='tdadmin_td_companies')
     td_admin1 = db.relationship('TdAdmin', primaryjoin='TdCompany.registrant == TdAdmin.id', backref='tdadmin_td_companies_0')
 
-
     def to_json(self):
         json_company = {
             'idx': self.idx,

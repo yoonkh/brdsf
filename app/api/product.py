@@ -21,7 +21,6 @@ def all_prods():
             .filter(ThCertification.tagType.like('%' + search + '%')) \
             .filter(ThCertification.osType.like('%' + search + '%')).order_by(ThCertification.dtCertificate.desc())
 
-    # 각종 조건문 필터
     # 페이지네이션
     pagination = certs.paginate(page=int(page), per_page=int(per_page), error_out=False)
     certs = pagination.items

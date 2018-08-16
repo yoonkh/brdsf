@@ -39,6 +39,7 @@ def register_app():
                 limitCertHour=json_data['limitCertHour'],
                 limitCertCnt=json_data['limitCertCnt'],
                 updateUrl=json_data['updateUrl'])
+    app.state = 'Enable'
     db.session.add(app)
     db.session.commit()
     return jsonify({'result': 'success'})
