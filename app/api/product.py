@@ -19,12 +19,13 @@ def all_prods():
             .filter(ThCertification.result.like('%' + search + '%')) \
             .filter(ThCertification.tagType.like('%' + search + '%')) \
             .filter(ThCertification.osType.like('%' + search + '%')).order_by(ThCertification.dtCertificate.desc())
-
     # 각종 조건문 필터
     # 페이지네이션
     certs = certs.paginate(page=int(page), per_page=20, error_out=False).items
+    total = len(certs)
     # return jsonify({'total': certs.total, 'certs': [cert.to_json() for cert in certs]})
-    return jsonify({'certs': [cert.to_json() for cert in certs]})
+    return jsonify({'certs': [cert.to_json() for cert in certs],
+                    'total': total})
 
 
 @api.route('/prod-cert/<int:id>')

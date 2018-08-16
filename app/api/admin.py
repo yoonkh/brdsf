@@ -1,12 +1,13 @@
 from app.api.helper import date_range, page_and_search
 from ..models import *
-
 from flask import jsonify, request, current_app, url_for, g
-
 from app import db
 from app.api.errors import forbidden
 from . import api
 from ..models import TdAccount
+import pymysql
+import collections
+import os
 
 
 @api.route('/admin/users/')
@@ -115,6 +116,7 @@ def reset_password(id):
     return jsonify({'result': 'success', 'password': password})
 
 
+
 @api.route('/admin/users/<int:id>/change-role/', methods=['PUT'])
 def change_role(id):
     json_data = request.get_json()
@@ -202,41 +204,77 @@ def delete_icrf_user(id):
 
 @api.route('/admin/access/')
 def get_user_access():
-    # page = request.args.get('page', 1, type=int)
-    # pagination = TlLogin.query.paginate(page, per_page=20, error_out=False)
-    # logins = pagination.items
-    # prev = None
-    # if pagination.has_prev:
-    #     prev = url_for('api.get_user_access', page=page - 1)
-    # next = None
-    # if pagination.has_next:
-    #     next = url_for('api.get_user_access', page=page + 1)
-    #
-    # return jsonify({
-    #     'logins': [log.to_json() for log in logins],
-    #     'prev': prev,
-    #     'next': next,
-    #     'count': pagination.total
-    # })
+
     start, end = date_range()
-    dates = TlLogin.query.filter(TlLogin.dtAttempted.between(start, end)).order_by(TlLogin.dtAttempted.asc())
-    query_data = request.args
-    page, search = query_data.get('page', 1), query_data.get('query', '')
-    if len(search) > 1:
-        logs = dates.filter((TlLogin.id.like('%' + search + '%')))
-    else:
-        logs = dates
-    logs = logs.order_by(TlLogin.idx.desc()).all()
-    return jsonify({'total': len(logs), 'logs': [log.to_json() for log in logs]})
+    start = datetime.strftime(start, '%Y-%m-%d')
+    end = datetime.strftime(end, '%Y-%m-%d')
+    conn = pymysql.connect(host=os.environ.get("DB_HOST"),
+                           user=os.environ.get("DB_USERNAME"),
+                           password=os.environ.get("DB_PASSWORD"),
+                           db=os.environ.get("DB_NAME"),
+                           charset='utf8',
+                           port=3306)
+    curs = conn.cursor()
+    sql = "select bstnt.tl_login.*, if (isnull(bstnt.td_admin.name), bstnt.td_account.name_kr, bstnt.td_admin.name) as name,\
+     if (isnull(bstnt.td_admin.role), bstnt.td_account.role, bstnt.td_admin.role) as role,\
+     bstnt.tc_role.name_kr as role_name, bstnt.tc_result.msg_kr from bstnt.tl_login\
+     left join bstnt.td_admin on bstnt.tl_login.id = bstnt.td_admin.id left join bstnt.td_account\
+     on bstnt.tl_login.id = bstnt.td_account.id left join tc_result on bstnt.tl_login.resultCode = bstnt.tc_result.code\
+     left join tc_role on bstnt.td_admin.role = bstnt.tc_role.code or bstnt.td_account.role = bstnt.tc_role.code\
+     where dtAttempted between '"+start+"' and '"+end+"' order by dtAttempted desc"
+    curs.execute(sql)
+    access = list(curs.fetchall())
+    conn.close()
+
+    for index, log in enumerate(access):
+        log_dict = dict()
+        log_dict['idx'] = log[0]
+        log_dict['id'] = log[1]
+        log_dict['resultCode'] = log[2]
+        log_dict['dtAttempted'] = log[3]
+        log_dict['remoteAddr'] = log[4]
+        log_dict['name'] = log[5]
+        log_dict['role'] = log[6]
+        log_dict['role_name'] = log[7]
+        log_dict['msg_kr'] = log[8]
+
+        access[index] = log_dict
+
+    return jsonify({'total': len(access), 'logs': access})
 
 
 
 @api.route('/admin/blacklist/')
 def all_blacklists():
-    blacklists = TdBlackList.query.all()
-    return jsonify({
-        'blacklists': [black.to_json() for black in blacklists]
-    })
+    conn = pymysql.connect(host=os.environ.get("DB_HOST"),
+                           user=os.environ.get("DB_USERNAME"),
+                           password=os.environ.get("DB_PASSWORD"),
+                           db=os.environ.get("DB_NAME"),
+                           charset='utf8',
+                           port=3306)
+    curs = conn.cursor()
+    sql = "SELECT bstnt.td_black_list.*, bstnt.td_device.appCode, bstnt.td_app.name_kr, bstnt.td_tag_version.name_kr FROM bstnt.td_black_list left join bstnt.td_device on bstnt.td_black_list.pushToken=bstnt.td_device.pushToken left join bstnt.td_app on bstnt.td_device.appCode = bstnt.td_app.code left join bstnt.td_tag_version on bstnt.td_app.tagType = bstnt.td_tag_version.type where delYN like'N' group by pushToken order by dtRegistered desc"
+    curs.execute(sql)
+    blacklists = list(curs.fetchall())
+    conn.close()
+
+    for index, block in enumerate(blacklists):
+        block_dict = dict()
+        block_dict['index'] = block[0]
+        block_dict['pushToken'] = block[1]
+        block_dict['blType'] = block[2]
+        block_dict['delYN'] = block[3]
+        block_dict['dtRegistered'] = block[4]
+        block_dict['registrant'] = block[5]
+        block_dict['dtModified'] = block[6]
+        block_dict['modifier'] = block[7]
+        block_dict['appCode'] = block[8]
+        block_dict['appname'] = block[9]
+        block_dict['name_kr'] = block[10]
+
+        blacklists[index] = block_dict
+
+    return jsonify({'blacklists': blacklists})
 
 
 @api.route('/admin/blacklist/', methods=['POST'])
@@ -265,22 +303,6 @@ def update_blacklist(id):
 
 @api.route('/admin/over-cert/')
 def get_over_cert():
-    # page = request.args.get('page', 1, type=int)
-    # pagination = TsCertReportCount.query.paginate(page, per_page=20, error_out=False)
-    # get_over_certs = pagination.items
-    # prev = None
-    # if pagination.has_prev:
-    #     prev = url_for('api.get_over_cert', page=page - 1)
-    # next = None
-    # if pagination.has_next:
-    #     next = url_for('api.get_over_cert', page=page + 1)
-    #
-    # return jsonify({
-    #     'get_over_cert': [get_over_cert.to_json() for get_over_cert in get_over_certs],
-    #     'prev': prev,
-    #     'next': next,
-    #     'count': pagination.total
-    # })
     start, end = date_range()
     dates = TdDevice.query.filter(TdDevice.dtRegistered.between(start, end)).order_by(TdDevice.dtRegistered.asc())
     page, search = page_and_search()

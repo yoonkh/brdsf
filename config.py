@@ -15,12 +15,11 @@ class Config:
     # FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
     UPLOAD_FOLDER = '/home/yoon/Downloads/brdsf/app/'
     ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
-
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')or \
         "mysql+pymysql://{username}:{password}@{host}".\
         format(username=os.environ.get("DB_USERNAME"), password=os.environ.get("DB_PASSWORD"),
-               host=os.environ.get("DB_HOST"))
+               host=os.environ.get("DB_HOST")+"/"+os.environ.get("DB_NAME"))
 
 
 class DevelopmentConfig(Config):
