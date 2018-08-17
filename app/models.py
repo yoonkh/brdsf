@@ -1,6 +1,6 @@
 # coding: utf-8
+from sqlalchemy import BigInteger, Column, DateTime,Enum, ForeignKey, Index, Integer, SmallInteger, String, Text
 from datetime import datetime
-
 from flask import current_app
 from flask_login import UserMixin, AnonymousUserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
@@ -9,7 +9,6 @@ from sqlalchemy.schema import FetchedValue
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-
 from . import db, login_manager
 
 
@@ -201,15 +200,6 @@ class TdAccount(db.Model, UserMixin):
     def __repr__(self):
         return '<User %r>' % self.email
 
-
-# class AnonymousUser(AnonymousUserMixin):
-#     def can(self, permissions):
-#         return False
-#
-#     def is_administrator(self):
-#         return False
-#
-# login_manager.anonymous_user = AnonymousUser
 
 
 class TdAdmin(db.Model):
@@ -446,6 +436,7 @@ class TdCompany(db.Model):
 
     td_admin = db.relationship('TdAdmin', primaryjoin='TdCompany.modifier == TdAdmin.id', backref='tdadmin_td_companies')
     td_admin1 = db.relationship('TdAdmin', primaryjoin='TdCompany.registrant == TdAdmin.id', backref='tdadmin_td_companies_0')
+
 
     def to_json(self):
         json_company = {
@@ -929,8 +920,8 @@ class TdRandomMnge(db.Model):
     ticketEndIdx = db.Column(db.BigInteger)
     dtExpired = db.Column(db.DateTime)
     ticketFileName = db.Column(db.String(128), unique=True)
-    ticketListState = db.Column(Enum('ING', 'Complete'))
-    delYN = db.Column(Enum('Y', 'N'), nullable=False, server_default=db.FetchedValue())
+    ticketListState = db.Column(db.Enum('ING', 'Complete'))
+    delYN = db.Column(db.Enum('Y', 'N'), nullable=False, server_default=db.FetchedValue())
     memo = db.Column(db.String(64))
     dtRegistered = db.Column(db.DateTime, nullable=False, server_default=db.FetchedValue())
     registrant = db.Column(db.String(20), nullable=False)
@@ -948,7 +939,7 @@ class TdRandomMnge(db.Model):
             'companyCode': self.companyCode,
             'tagCode': self.tagCode,
             'retailerID': self.retailerID,
-            'tableNum': self.tableNum,
+            'tab.Enum': self.tab.Enum,
             'ticketCnt': self.ticketCnt,
             'ticketStartIdx': self.ticketStartIdx,
             'ticketEndIdx': self.ticketEndIdx,
@@ -975,7 +966,7 @@ class TdAdminApp(db.Model):
     companyName = db.Column(db.String(64), nullable=False)
     name = db.Column(db.String(64), nullable=False)
     contact = db.Column(db.String(32), nullable=False)
-    state = db.Column(Enum('Registered', 'Approved', 'Deleted'), nullable=False, server_default=db.FetchedValue())
+    state = db.Column(db.Enum('Registered', 'Approved', 'Deleted'), nullable=False, server_default=db.FetchedValue())
     dtRegistered = db.Column(db.DateTime, nullable=False, server_default=db.FetchedValue())
     dtModified = db.Column(db.DateTime, nullable=False, server_default=db.FetchedValue())
     modifier = db.Column(db.String(20))

@@ -19,7 +19,6 @@ def all_prods():
             .filter(ThCertification.companyCode.like('%' + search + '%')) \
             .filter(ThCertification.result.like('%' + search + '%')) \
             .filter(ThCertification.tagType.like('%' + search + '%')) \
-            .filter(ThCertification.osType.like('%' + search + '%')).order_by(ThCertification.dtCertificate.desc())
 
     # 페이지네이션
     pagination = certs.paginate(page=int(page), per_page=int(per_page), error_out=False)
