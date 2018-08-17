@@ -1,11 +1,12 @@
 from flask import jsonify, request
-
 from flask import jsonify
 from ..models import *
 from app import db
 from app.models import TdApp
 from . import api
-
+import pymysql
+import collections
+import os
 
 # query.page
 @api.route('/apps/', methods=['GET'])
@@ -44,11 +45,6 @@ def register_app():
     return jsonify({'result': 'success'})
 
 
-@api.route('/apps/<int:id>')
-def get_app(id):
-    app = TdApp.query.get_or_404(id)
-    return jsonify(app.to_json())
-
 
 @api.route('/apps/<int:id>', methods=['PUT'])
 def update_app(id):
@@ -86,3 +82,52 @@ def delete_app(id):
     db.session.delete(app)
     db.session.commit()
     return jsonify({'result': 'success'})
+
+
+@api.route('/app/')
+def get_app():
+    token = request.args.get('pushtoken')
+    conn = pymysql.connect(host=os.environ.get("DB_HOST"),
+                           user=os.environ.get("DB_USERNAME"),
+                           password=os.environ.get("DB_PASSWORD"),
+                           db=os.environ.get("DB_NAME"),
+                           charset='utf8',
+                           port=3306)
+    curs = conn.cursor()
+    sql = "select bstnt.th_certification.* , bstnt.td_device.model, bstnt.td_device.language, bstnt.td_device.dtRegistered ,bstnt.td_app.name_kr as appname\
+    from bstnt.th_certification left join bstnt.td_device on bstnt.th_certification.deviceID = bstnt.td_device.pushToken\
+    left join bstnt.td_app on bstnt.td_device.appCode = bstnt.td_app.code where deviceID like '"+token+"' order by dtCertificate desc;"
+    curs.execute(sql)
+    apps = list(curs.fetchall())
+    conn.close()
+
+    for index, log in enumerate(apps):
+        app_dict = dict()
+        app_dict['idx'] = log[0]
+        app_dict['deviceID'] = log[1]
+        app_dict['companyCode'] = log[2]
+        app_dict['tagType'] = log[3]
+        app_dict['tagCode'] = log[4]
+        app_dict['hVersion'] = log[5]
+        app_dict['mappingCode'] = log[6]
+        app_dict['image'] = log[7]
+        app_dict['result'] = log[8]
+        app_dict['resultDetail'] = log[9]
+        app_dict['osType'] = log[10]
+        app_dict['dtCertificate'] = log[11]
+        app_dict['longitude'] = log[12]
+        app_dict['latitude'] = log[13]
+        app_dict['regionIdx'] = log[14]
+        app_dict['random'] = log[15]
+        app_dict['randomCnt'] = log[16]
+        app_dict['retailerID'] = log[17]
+        app_dict['mode'] = log[18]
+        app_dict['data'] = log[19]
+        app_dict['model'] = log[20]
+        app_dict['language'] = log[21]
+        app_dict['dtRegistered'] = log[22]
+        app_dict['appname'] = log[23]
+
+        apps[index] = app_dict
+
+    return jsonify({'app': apps, 'total':len(apps)})
