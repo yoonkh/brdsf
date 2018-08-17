@@ -242,7 +242,7 @@ class TdAdmin(db.Model):
             'dtRegistered': self.dtRegistered,
             'modifier': self.modifier,
             'dtModified': self.dtModified,
-            'dtLastConnected': self.login_log(),
+            'dtLastConnected': self.dtLastConnected,
             'note': self.note,
             'failCount': self.failCount
         }
