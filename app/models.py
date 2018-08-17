@@ -693,7 +693,7 @@ class ThCertification(db.Model):
     hVersion = db.Column(db.ForeignKey('td_tag_version.version'), index=True)
     mappingCode = db.Column(db.String(10))
     image = db.Column(db.String(128), index=True)
-    result = db.Column(Enum('Genuine', 'Counterfeit', 'Revalidation', 'Exprired', 'Invalid', 'Retry', 'OverCert', 'DifferentQR', 'CommonQR', 'NotiOverCert'), nullable=False)
+    result = db.Column(Enum('Genuine', 'Counterfeit', 'Revalidation', 'Exprired', 'Inval    id', 'Retry', 'OverCert', 'DifferentQR', 'CommonQR', 'NotiOverCert'), nullable=False)
     resultDetail = db.Column(db.Integer, server_default=db.FetchedValue())
     osType = db.Column(Enum('iOS', 'Android', 'Unknown', 'Web'), nullable=False)
     dtCertificate = db.Column(db.DateTime, nullable=False, index=True)

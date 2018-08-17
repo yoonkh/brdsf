@@ -7,6 +7,7 @@ from . import api
 import pymysql
 import collections
 import os
+from .helper import app_sql
 
 # query.page
 @api.route('/apps/', methods=['GET'])
@@ -90,6 +91,7 @@ def delete_app(id):
 
 @api.route('/app/<pushtoken>', methods=['GET'])
 def get_app(pushtoken):
+    f_sql, c_sql = app_sql()
     conn = pymysql.connect(host=os.environ.get("DB_HOST"),
                            user=os.environ.get("DB_USERNAME"),
                            password=os.environ.get("DB_PASSWORD"),
@@ -97,12 +99,41 @@ def get_app(pushtoken):
                            charset='utf8',
                            port=3306)
     curs = conn.cursor()
-    sql = "select bstnt.th_certification.* , bstnt.td_device.model, bstnt.td_device.language, bstnt.td_device.dtRegistered ,bstnt.td_app.name_kr as appname\
-    from bstnt.th_certification left join bstnt.td_device on bstnt.th_certification.deviceID = bstnt.td_device.pushToken\
-    left join bstnt.td_app on bstnt.td_device.appCode = bstnt.td_app.code where deviceID like '"+pushtoken+"' order by dtCertificate desc;"
+
+    sql = f_sql+pushtoken+"' order by dtCertificate desc;"
     curs.execute(sql)
     apps = list(curs.fetchall())
+
+    sql = c_sql + pushtoken + "' and result like 'Genuine'"
+    curs.execute(sql)
+    g = list(curs.fetchall())[0][0]
+
+    sql = c_sql + pushtoken + "' and result like 'Counterfeit'"
+    curs.execute(sql)
+    c = list(curs.fetchall())[0][0]
+
+    sql = c_sql + pushtoken + "' and result like 'Revalidation'"
+    curs.execute(sql)
+    r = list(curs.fetchall())[0][0]
+
+    sql = c_sql + pushtoken + "' and result like 'OverCert'"
+    curs.execute(sql)
+    o = list(curs.fetchall())[0][0]
+
+    sql = c_sql + pushtoken + "' and result like 'DifferentQR'"
+    curs.execute(sql)
+    d = list(curs.fetchall())[0][0]
+
+    sql = c_sql + pushtoken + "' and result like 'CommonQR'"
+    curs.execute(sql)
+    cm = list(curs.fetchall())[0][0]
+
+    sql = "SELECT count(*) FROM bstnt.th_report where deviceID like '"+pushtoken+"'"
+    curs.execute(sql)
+    rp = list(curs.fetchall())[0][0]
     conn.close()
+
+    count_cert = {'Genuine': g, 'Counterfeit': c, 'Revalidation': r, 'OverCert': o, 'DifferentQR': d, 'CommonQR': cm, 'Report': rp}
 
     for index, app in enumerate(apps):
         app_dict = dict()
@@ -130,7 +161,10 @@ def get_app(pushtoken):
         app_dict['language'] = app[21]
         app_dict['dtRegistered'] = app[22]
         app_dict['appname'] = app[23]
+        app_dict['dlType'] = app[24]
 
         apps[index] = app_dict
 
-    return jsonify({'app': apps, 'total':len(apps)})
+    return jsonify({'app': apps,
+                    'count_cert': count_cert,
+                    'total':len(apps)})

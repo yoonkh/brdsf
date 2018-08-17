@@ -43,3 +43,15 @@ def page_and_search():
     query_data = request.args
     page, search = query_data.get('page', 1), query_data.get('query', '')
     return page, search
+
+def app_sql():
+    frontsql = "select bstnt.th_certification.* , bstnt.td_device.model, bstnt.td_device.language, bstnt.td_device.dtRegistered ,bstnt.td_app.name_kr as appname, bstnt.td_black_list.blType\
+          from bstnt.th_certification left join bstnt.td_device on bstnt.th_certification.deviceID = bstnt.td_device.pushToken left join bstnt.td_app\
+          on bstnt.td_device.appCode = bstnt.td_app.code left join bstnt.td_black_list on bstnt.th_certification.deviceID = bstnt.td_black_list.pushToken\
+          where deviceID like '"
+    countsql = "select count(*) from bstnt.th_certification left join bstnt.td_device on bstnt.th_certification.deviceID = bstnt.td_device.pushToken left join bstnt.td_app\
+          on bstnt.td_device.appCode = bstnt.td_app.code left join bstnt.td_black_list on bstnt.th_certification.deviceID = bstnt.td_black_list.pushToken\
+          where deviceID like '"
+
+
+    return frontsql, countsql
