@@ -269,8 +269,8 @@ def all_blacklists():
         block_dict['dtModified'] = block[6]
         block_dict['modifier'] = block[7]
         block_dict['appCode'] = block[8]
-        block_dict['appname'] = block[9]
-        block_dict['name_kr'] = block[10]
+        block_dict['appName'] = block[9]
+        block_dict['tagType'] = block[10]
 
         blacklists[index] = block_dict
 
