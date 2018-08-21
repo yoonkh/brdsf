@@ -259,6 +259,7 @@ def all_blacklists():
 @api.route('/admin/blacklist/', methods=['POST'])
 def register_blacklist():
     json_data = request.get_json()
+
     blacklist = TdBlackList(blType=json_data['blType'],
                             delYN=json_data['delYN'],
                             dtModified=json_data['dtModified'],
@@ -266,13 +267,55 @@ def register_blacklist():
                             modifier=json_data['modifier'],
                             pushToken=json_data['pushToken'],
                             registrant=json_data['registrant'])
-    db.session.add(blacklist)
-    db.session.commit()
-    return jsonify({'result': 'success'})
+
+    bls = TdBlackList.query.filter(TdBlackList.pushToken).all()
+
+    if blacklist.pushToken is not bls:
+
+        db.session.add(blacklist)
+        db.session.commit()
+
+        response = {
+            'result': 'success'
+        }
+
+    else:
+
+        response = {
+            'result': 'already existing pushtoken'
+        }
+
+    return jsonify(response)
+
+
+@api.route('/admin/blacklist/<int:id>', methods=['PUT'])
+def update_blacklist(id):
+
+    blacklist = TdBlackList.query.filter_by(idx=id).first()
+
+    json_data = request.get_json()
+
+    if blacklist:
+
+        blacklist.delYN = 'N'
+
+        blacklist.blType = json_data.get('blType') or blacklist.blType
+        # blacklist.delYN = json_data.get('delYN') or blacklist.delYN
+        blacklist.dtModified = json_data.get('dtModified') or blacklist.dtModified
+        blacklist.modifier = json_data.get('modifier') or blacklist.modifier
+        blacklist.pushToken = json_data.get('pushToken') or blacklist.pushToken
+        blacklist.registrant = json_data.get('registrant') or blacklist.registrant
+
+        db.session.add(blacklist)
+        db.session.commit()
+
+    return jsonify({
+        'result': 'success'
+    })
 
 
 @api.route('/admin/blacklist/<int:id>', methods=['DELETE'])
-def update_blacklist(id):
+def delete_blacklist(id):
     blacklist = TdBlackList.query.filter_by(idx=id).first()
 
     if blacklist.delYN is 'N':
