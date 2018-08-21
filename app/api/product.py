@@ -11,16 +11,32 @@ from . import api
 def all_prods():
     start, end = date_range()
     print(start, end)
-    page, search, companycode, result, tag, os = page_and_search()
+    page, search = page_and_search()
     per_page = request.args.get('perPage', 10)
+
+    query_data = request.args
+    companycode = query_data.get('companycode', '')
+    result = query_data.get('result', '')
+    tag = query_data.get('tag', '')
+    os = query_data.get('os', '')
 
 
     # 날짜 range and order
     certs = ThCertification.query.filter(ThCertification.dtCertificate.between(start, end)) \
-            .filter_by(companyCode=companycode) \
-            .filter_by(result=result) \
-            .filter_by(tagType=tag) \
-            .filter_by(osType=os).order_by(ThCertification.dtCertificate.desc())
+
+    if companycode:
+        certs = certs.filter_by(companyCode=companycode)
+
+    if result:
+        certs = certs.filter_by(result=result)
+
+    if tag:
+        certs = certs.filter_by(tagType=tag)
+
+    if os:
+        certs = certs.filter_by(osType=os)
+
+    certs.order_by(ThCertification.dtCertificate.desc())
 
     # 페이지네이션
     pagination = certs.paginate(page=int(page), per_page=int(per_page), error_out=False)

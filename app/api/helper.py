@@ -34,11 +34,7 @@ def log_date_range():
 def page_and_search():
     query_data = request.args
     page, search = query_data.get('page', 1), query_data.get('query', '')
-    companycode = query_data.get('companycode', '')
-    result = query_data.get('result', '')
-    tag = query_data.get('tag', '')
-    os = query_data.get('os', '')
-    return page, search, companycode, result, tag, os
+    return page, search
 
 
 # def date_range_by_year():
