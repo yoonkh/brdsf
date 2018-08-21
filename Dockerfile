@@ -14,7 +14,8 @@ RUN pip3 install gunicorn
 
 ENV FLASK_APP application.py
 ENV FLASK_ENV production
-ENV DB_HOST bstnt2.c0grph7n5f6y.ap-northeast-2.rds.amazonaws.com/bstnt
+ENV DB_HOST bstnt2.c0grph7n5f6y.ap-northeast-2.rds.amazonaws.com
+ENV DB_NAME bstnt
 ENV DB_USERNAME blackruby
 ENV DB_PASSWORD blackruby!
 
