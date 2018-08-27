@@ -17,6 +17,26 @@ def date_range():
 
     return start_date, end_date
 
+
+def log_date_range():
+
+    query_data = request.args
+    start, end = query_data.get('start'), query_data.get('end')
+
+    today = datetime.now()
+    loginit = datetime.now() - relativedelta(months=3)
+
+    start_date = datetime.strptime(start, '%Y-%m-%d').date() if start is not None else today
+    end_date = datetime.strptime(end, '%Y-%m-%d').date() if end is not None else loginit
+    return start_date, end_date
+
+
+def page_and_search():
+    query_data = request.args
+    page, search = query_data.get('page', 1), query_data.get('query', '')
+    return page, search
+
+
 def cert_date_range():
 
     end = datetime.now() - relativedelta(months=1)
