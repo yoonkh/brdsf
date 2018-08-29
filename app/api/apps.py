@@ -7,6 +7,7 @@ from . import api
 import pymysql
 import collections
 import os
+from .helper import app_sql
 
 # query.page
 @api.route('/apps/', methods=['GET'])
@@ -88,9 +89,9 @@ def delete_app(id):
     return jsonify({'result': 'success'})
 
 
-@api.route('/app/')
-def get_app():
-    token = request.args.get('pushtoken')
+@api.route('/app/<pushtoken>', methods=['GET'])
+def get_app(pushtoken):
+    f_sql, c_sql = app_sql()
     conn = pymysql.connect(host=os.environ.get("DB_HOST"),
                            user=os.environ.get("DB_USERNAME"),
                            password=os.environ.get("DB_PASSWORD"),
@@ -98,40 +99,72 @@ def get_app():
                            charset='utf8',
                            port=3306)
     curs = conn.cursor()
-    sql = "select bstnt.th_certification.* , bstnt.td_device.model, bstnt.td_device.language, bstnt.td_device.dtRegistered ,bstnt.td_app.name_kr as appname\
-    from bstnt.th_certification left join bstnt.td_device on bstnt.th_certification.deviceID = bstnt.td_device.pushToken\
-    left join bstnt.td_app on bstnt.td_device.appCode = bstnt.td_app.code where deviceID like '"+token+"' order by dtCertificate desc;"
+
+    sql = f_sql+pushtoken+"' order by dtCertificate desc;"
     curs.execute(sql)
     apps = list(curs.fetchall())
+
+    sql = c_sql + pushtoken + "' and result like 'Genuine'"
+    curs.execute(sql)
+    g = list(curs.fetchall())[0][0]
+
+    sql = c_sql + pushtoken + "' and result like 'Counterfeit'"
+    curs.execute(sql)
+    c = list(curs.fetchall())[0][0]
+
+    sql = c_sql + pushtoken + "' and result like 'Revalidation'"
+    curs.execute(sql)
+    r = list(curs.fetchall())[0][0]
+
+    sql = c_sql + pushtoken + "' and result like 'OverCert'"
+    curs.execute(sql)
+    o = list(curs.fetchall())[0][0]
+
+    sql = c_sql + pushtoken + "' and result like 'DifferentQR'"
+    curs.execute(sql)
+    d = list(curs.fetchall())[0][0]
+
+    sql = c_sql + pushtoken + "' and result like 'CommonQR'"
+    curs.execute(sql)
+    cm = list(curs.fetchall())[0][0]
+
+    sql = "SELECT count(*) FROM bstnt.th_report where deviceID like '"+pushtoken+"'"
+    curs.execute(sql)
+    rp = list(curs.fetchall())[0][0]
     conn.close()
 
-    for index, log in enumerate(apps):
+    count_cert = {'Genuine': g, 'Counterfeit': c, 'Revalidation': r, 'OverCert': o, 'DifferentQR': d, 'CommonQR': cm, 'Report': rp}
+
+    for index, app in enumerate(apps):
         app_dict = dict()
-        app_dict['idx'] = log[0]
-        app_dict['deviceID'] = log[1]
-        app_dict['companyCode'] = log[2]
-        app_dict['tagType'] = log[3]
-        app_dict['tagCode'] = log[4]
-        app_dict['hVersion'] = log[5]
-        app_dict['mappingCode'] = log[6]
-        app_dict['image'] = log[7]
-        app_dict['result'] = log[8]
-        app_dict['resultDetail'] = log[9]
-        app_dict['osType'] = log[10]
-        app_dict['dtCertificate'] = log[11]
-        app_dict['longitude'] = log[12]
-        app_dict['latitude'] = log[13]
-        app_dict['regionIdx'] = log[14]
-        app_dict['random'] = log[15]
-        app_dict['randomCnt'] = log[16]
-        app_dict['retailerID'] = log[17]
-        app_dict['mode'] = log[18]
-        app_dict['data'] = log[19]
-        app_dict['model'] = log[20]
-        app_dict['language'] = log[21]
-        app_dict['dtRegistered'] = log[22]
-        app_dict['appname'] = log[23]
+        app_dict['idx'] = app[0]
+        app_dict['deviceID'] = app[1]
+        app_dict['companyCode'] = app[2]
+        app_dict['tagType'] = app[3]
+        app_dict['tagCode'] = app[4]
+        app_dict['hVersion'] = app[5]
+        app_dict['mappingCode'] = app[6]
+        app_dict['image'] = app[7]
+        app_dict['result'] = app[8]
+        app_dict['resultDetail'] = app[9]
+        app_dict['osType'] = app[10]
+        app_dict['dtCertificate'] = app[11]
+        app_dict['longitude'] = app[12]
+        app_dict['latitude'] = app[13]
+        app_dict['regionIdx'] = app[14]
+        app_dict['random'] = app[15]
+        app_dict['randomCnt'] = app[16]
+        app_dict['retailerID'] = app[17]
+        app_dict['mode'] = app[18]
+        app_dict['data'] = app[19]
+        app_dict['model'] = app[20]
+        app_dict['language'] = app[21]
+        app_dict['dtRegistered'] = app[22]
+        app_dict['appname'] = app[23]
+        app_dict['blType'] = app[24]
 
         apps[index] = app_dict
 
-    return jsonify({'app': apps, 'total':len(apps)})
+    return jsonify({'app': apps,
+                    'count_cert': count_cert,
+                    'total':len(apps)})
