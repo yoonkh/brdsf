@@ -319,10 +319,8 @@ def update_blacklist(id):
 
     if blacklist:
 
-        blacklist.delYN = 'N'
-
         blacklist.blType = json_data.get('blType') or blacklist.blType
-        # blacklist.delYN = json_data.get('delYN') or blacklist.delYN
+        blacklist.delYN = 'N'
         blacklist.dtModified = json_data.get('dtModified') or blacklist.dtModified
         blacklist.modifier = json_data.get('modifier') or blacklist.modifier
         blacklist.pushToken = json_data.get('pushToken') or blacklist.pushToken
@@ -350,12 +348,6 @@ def delete_blacklist(id):
         response = {'result': 'already deleted'}
 
     return jsonify(response)
-
-    # db.session.delete(blacklist)
-    # db.session.commit()
-    # return jsonify({
-    #     'result': 'success'
-    # })
 
 
 @api.route('/admin/blacklist/<int:id>')

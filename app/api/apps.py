@@ -162,6 +162,8 @@ def get_app(pushtoken):
         app_dict['dtRegistered'] = app[22]
         app_dict['appname'] = app[23]
         app_dict['blType'] = app[24]
+        app_dict['delYN'] = app[25]
+
 
         apps[index] = app_dict
 
