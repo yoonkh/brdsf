@@ -65,7 +65,7 @@ def page_and_search():
     return page, search
 
 def app_sql():
-    frontsql = "select bstnt.th_certification.* , bstnt.td_device.model, bstnt.td_device.language, bstnt.td_device.dtRegistered ,bstnt.td_app.name_kr as appname, bstnt.td_black_list.blType, bstnt.td_black_list.delYN\
+    frontsql = "select bstnt.th_certification.* , bstnt.td_device.model, bstnt.td_device.language, bstnt.td_device.dtRegistered ,bstnt.td_app.name_kr as appname, bstnt.td_black_list.blType, bstnt.td_black_list.delYN, bstnt.td_black_list.idx as idBlack\
           from bstnt.th_certification\
           left join bstnt.td_device \
           on bstnt.th_certification.deviceID = bstnt.td_device.pushToken \
