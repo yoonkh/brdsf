@@ -284,8 +284,7 @@ def all_blacklists():
 def register_blacklist():
     json_data = request.get_json()
 
-    blacklist = TdBlackList(idx=json_data['idx'],
-                            blType=json_data['blType'],
+    blacklist = TdBlackList(blType=json_data['blType'],
                             delYN=json_data['delYN'],
                             dtModified=json_data['dtModified'],
                             dtRegistered=json_data['dtRegistered'],
