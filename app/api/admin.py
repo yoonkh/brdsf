@@ -278,6 +278,8 @@ def all_blacklists():
     return jsonify({'blacklists': blacklists})
 
 
+
+
 @api.route('/admin/blacklist/', methods=['POST'])
 def register_blacklist():
     json_data = request.get_json()
@@ -352,8 +354,8 @@ def delete_blacklist(id):
 
 @api.route('/admin/blacklist/<int:id>')
 def get_blacklist(id):
-    blacklist = TdBlackList.query.get_or_404(id)
-    return jsonify(blacklist.to_json())
+    blacklist = TdBlackList.query.filter_by(idx=id).all()
+    return jsonify({'bls': [bl.to_json() for bl in blacklist]})
 
 
 
