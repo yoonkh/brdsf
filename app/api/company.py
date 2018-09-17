@@ -5,7 +5,6 @@ from werkzeug.utils import secure_filename, redirect
 
 import config
 from app import db
-from app.api.helper import allowed_file
 from app.models import TdCompany
 from . import api
 
