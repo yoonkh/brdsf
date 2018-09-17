@@ -1,6 +1,8 @@
 from flask import g, jsonify
 from flask_httpauth import HTTPBasicAuth
-from app.models import TdAccount
+
+from app.decorators import permission_required
+from app.models import TdAccount, Permission
 from . import api
 from .errors import unauthorized, forbidden
 
@@ -37,6 +39,7 @@ def before_request():
 
 
 @api.route('/tokens/', methods=['POST'])
+@permission_required(Permission.ICRAFT_SUPER_ADMIN)
 def get_token():
     if g.current_user.is_anonymous or g.token_used:
         return unauthorized('Invalid credentials2')

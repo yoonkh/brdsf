@@ -12,7 +12,6 @@ migrate = Migrate(app, db)
 
 
 @app.route('/')
-@permission_required(Permission.ICRAFT_SUPER_ADMIN)
 def index():
     return "<h1>Welcome to API</h1>"
 
