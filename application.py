@@ -19,21 +19,21 @@ def make_shell_context():
                 ThReport=ThReport, TiHolotag=TiHolotag, TlLogin=TlLogin, TsActiveUniqueCount= TsActiveUniqueCount,
                 TsAppdownDaily=TsAppdownDaily, TsCertReportCount=TsCertReportCount, BlacklistTong=BlacklistTong)
 
-@app.cli.command()
-def deploy():
-    """Run deployment tasks"""
-    # migrate database to latest revision
-    upgrade()
-
-    # create or update user roles
-    Role.insert_roles()
-
-    # create or update date types
-    DateType.insert_date_types()
-
-    # create or update user department
-    Team.insert_teams()
-
-    # create users, projects and worktimes
-    # read_user()
-    # read_project()
+# @app.cli.command()
+# def deploy():
+#     """Run deployment tasks"""
+#     # migrate database to latest revision
+#     upgrade()
+#
+#     # create or update user roles
+#     Role.insert_roles()
+#
+#     # create or update date types
+#     DateType.insert_date_types()
+#
+#     # create or update user department
+#     Team.insert_teams()
+#
+#     # create users, projects and worktimes
+#     # read_user()
+#     # read_project()

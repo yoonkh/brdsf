@@ -37,51 +37,6 @@ def page_and_search():
     return page, search
 
 
-# def date_range_by_year():
-#
-#     year = request.args.get('year')
-#     this_year = datetime.now().year
-#     oneday = timedelta(1)
-#
-#     if year is not None:
-#         start_date = datetime.strptime(year, '%Y').date()
-#         end_date = datetime.strptime(str(int(year)+1), '%Y').date() - oneday
-#     else:
-#         start_date = datetime.strptime(str(this_year), '%Y').date()
-#         end_date = datetime.strptime(str(this_year+1), '%Y').date() - oneday
-#
-#     return start_date, end_date
-#
-#
-# def group_by_month(worktimes):
-#
-#     initial_worktimes = {'work': 0, 'over_work': 0}
-#     monthes = {1: 'jan', 2: 'feb', 3: 'mar', 4: 'apr', 5: 'may', 6: 'jun',
-#                7: 'jul', 8: 'aug', 9: 'sept', 10: 'oct', 11: 'nov', 12: 'dec'}
-#
-#     monthly_worktimes = dict()
-#     for month_num in monthes:
-#         month = monthes[month_num]
-#         monthly_worktimes[month] = initial_worktimes.copy()
-#
-#     for worktime in worktimes:
-#         month_num = worktime.work_date.month
-#         month = monthes[month_num]
-#
-#         month_worktimes = monthly_worktimes[month]
-#         month_worktimes['work'] += worktime.work
-#         month_worktimes['over_work'] += worktime.over_work
-#
-#     # mws = groupby(worktimes, lambda w: w.work_date.month)
-#     # for (month, worktimes) in mws:
-#     #     ws = sum(w.work for w in worktimes)
-#     #     ows = sum(w.over_work for w in worktimes)
-#     #
-#     #     monthly_worktimes[monthes[month]]['work'] = ws
-#     #     monthly_worktimes[monthes[month]]['over_work'] = ows
-#
-#     return monthly_worktimes
-
 def cert_date_range():
 
     end = datetime.now() - relativedelta(months=1)
@@ -110,9 +65,14 @@ def page_and_search():
     return page, search
 
 def app_sql():
-    frontsql = "select bstnt.th_certification.* , bstnt.td_device.model, bstnt.td_device.language, bstnt.td_device.dtRegistered ,bstnt.td_app.name_kr as appname, bstnt.td_black_list.blType\
-          from bstnt.th_certification left join bstnt.td_device on bstnt.th_certification.deviceID = bstnt.td_device.pushToken left join bstnt.td_app\
-          on bstnt.td_device.appCode = bstnt.td_app.code left join bstnt.td_black_list on bstnt.th_certification.deviceID = bstnt.td_black_list.pushToken\
+    frontsql = "select bstnt.th_certification.* , bstnt.td_device.model, bstnt.td_device.language, bstnt.td_device.dtRegistered ,bstnt.td_app.name_kr as appname, bstnt.td_black_list.blType, bstnt.td_black_list.delYN, bstnt.td_black_list.idx as idBlack\
+          from bstnt.th_certification\
+          left join bstnt.td_device \
+          on bstnt.th_certification.deviceID = bstnt.td_device.pushToken \
+          left join bstnt.td_app\
+          on bstnt.td_device.appCode = bstnt.td_app.code \
+          left join bstnt.td_black_list \
+          on bstnt.th_certification.deviceID = bstnt.td_black_list.pushToken\
           where deviceID like '"
     countsql = "select count(*) from bstnt.th_certification left join bstnt.td_device on bstnt.th_certification.deviceID = bstnt.td_device.pushToken left join bstnt.td_app\
           on bstnt.td_device.appCode = bstnt.td_app.code left join bstnt.td_black_list on bstnt.th_certification.deviceID = bstnt.td_black_list.pushToken\

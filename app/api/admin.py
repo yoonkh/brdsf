@@ -278,6 +278,8 @@ def all_blacklists():
     return jsonify({'blacklists': blacklists})
 
 
+
+
 @api.route('/admin/blacklist/', methods=['POST'])
 def register_blacklist():
     json_data = request.get_json()
@@ -319,10 +321,8 @@ def update_blacklist(id):
 
     if blacklist:
 
-        blacklist.delYN = 'N'
-
         blacklist.blType = json_data.get('blType') or blacklist.blType
-        # blacklist.delYN = json_data.get('delYN') or blacklist.delYN
+        blacklist.delYN = 'N'
         blacklist.dtModified = json_data.get('dtModified') or blacklist.dtModified
         blacklist.modifier = json_data.get('modifier') or blacklist.modifier
         blacklist.pushToken = json_data.get('pushToken') or blacklist.pushToken
@@ -351,17 +351,11 @@ def delete_blacklist(id):
 
     return jsonify(response)
 
-    # db.session.delete(blacklist)
-    # db.session.commit()
-    # return jsonify({
-    #     'result': 'success'
-    # })
-
 
 @api.route('/admin/blacklist/<int:id>')
 def get_blacklist(id):
-    blacklist = TdBlackList.query.get_or_404(id)
-    return jsonify(blacklist.to_json())
+    blacklist = TdBlackList.query.filter_by(idx=id).all()
+    return jsonify({'bls': [bl.to_json() for bl in blacklist]})
 
 
 
