@@ -1,7 +1,8 @@
 from functools import wraps
 from flask import g
 from .errors import forbidden
-from ..models import TdAccount
+from ..models import TdAccount, Permission
+
 
 def permission_required(permission):
     def decorator(f):
@@ -12,3 +13,7 @@ def permission_required(permission):
             return f(*args, **kwargs)
         return decorated_function
     return decorator
+
+
+def admin_required(f):
+    return permission_required(Permission.ICRAFT_SUPER_ADMIN)(f)

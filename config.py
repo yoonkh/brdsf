@@ -19,7 +19,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')or \
         "mysql+pymysql://{username}:{password}@{host}".\
         format(username=os.environ.get("DB_USERNAME"), password=os.environ.get("DB_PASSWORD"),
-               host=os.environ.get("DB_HOST") + os.environ.get("DB_NAME"))
+               host=os.environ.get("DB_HOST") + '/' + os.environ.get("DB_NAME"))
 
 
 class DevelopmentConfig(Config):
